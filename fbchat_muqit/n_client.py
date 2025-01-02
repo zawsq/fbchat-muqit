@@ -77,9 +77,13 @@ class Client:
     @classmethod
     async def startSession(cls, cookies_file_path: str)-> Client:
         """
-        Returns instance of client class and Logs in Facebook.
+        Log in Facebook using cookies and Return An instance of Client class to Interact with Facebook. 
 
-        file_path : The file path of Facebook Json cookies.
+        Args:
+            file_path (str): The file path of Facebook cookies in json format.
+
+        Returns:
+            Client: An instance of Client class to interact with Facebook & Messenger.
         """
         try:
             state = await State.from_json_cookies(cookies_file_path)
@@ -108,11 +112,11 @@ class Client:
         return tuple(await self._state._graphql_requests(*queries))
 
     async def graphql_request(self, query):
-        """Shorthand for ``graphql_requests(query)[0]``.
-
-        Raises:
-            FBchatException: If request failed
-        """
+        # """Shorthand for ``graphql_requests(query)[0]``.
+        #
+        # Raises:
+        #     FBchatException: If request failed
+        # """
         return await self.graphql_requests(query)[0]
 
     """
@@ -123,11 +127,11 @@ class Client:
     LOGIN METHODS
     """
 
-    async def isLoggedIn(self):
+    async def isLoggedIn(self)-> bool:
         """Send a request to Facebook to check the login status.
 
         Returns:
-            bool: True if the client is still logged in
+            bool: True if the client is still logged in Facebook.
         """
         return await self._state.is_logged_in()
 
@@ -136,7 +140,10 @@ class Client:
     """
 
     async def setActiveMessenger(self, status_on: bool = True):
-        """Sets messenger Status Active if True or Inactive if False By default It is True"""
+        """Sets messenger Status Active if True or Inactive if False By default It is True
+        Args:
+            status_on: (bool): Whether to set status active or not. 
+        """
         data = { 
             "online_policy": "BLOCKLIST",
             "web_allowlist": None,
@@ -173,17 +180,17 @@ class Client:
 
 
     def setDefaultThread(self, thread_id, thread_type):
-        """Set default thread to send messages to.
-
-        Args:
-            thread_id: User/Group ID to default to. See :ref:`intro_threads`
-            thread_type (ThreadType): See :ref:`intro_threads`
-        """
+        # """Set default thread to send messages to.
+        #
+        # Args:
+        #     thread_id: User/Group ID to default to. See :ref:`intro_threads`
+        #     thread_type (ThreadType): See :ref:`intro_threads`
+        # """
         self._default_thread_id = thread_id
         self._default_thread_type = thread_type
 
     def resetDefaultThread(self):
-        """Reset default thread."""
+        # """Reset default thread."""
         self.setDefaultThread(None, None)
 
     """
@@ -238,22 +245,22 @@ class Client:
         return entries
 
     async def fetchThreads(self, thread_location, before=None, after=None, limit=None):
-        """Fetch all threads in ``thread_location``.
-
-        Threads will be sorted from newest to oldest.
-
-        Args:
-            thread_location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
-            before: Fetch only thread before this epoch (in ms) (default all threads)
-            after: Fetch only thread after this epoch (in ms) (default all threads)
-            limit: The max. amount of threads to fetch (default all threads)
-
-        Returns:
-            list: :class:`Thread` objects
-
-        Raises:
-            FBchatException: If request failed
-        """
+        # """Fetch all threads in ``thread_location``.
+        #
+        # Threads will be sorted from newest to oldest.
+        #
+        # Args:
+        #     thread_location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
+        #     before: Fetch only thread before this epoch (in ms) (default all threads)
+        #     after: Fetch only thread after this epoch (in ms) (default all threads)
+        #     limit: The max. amount of threads to fetch (default all threads)
+        #
+        # Returns:
+        #     list: :class:`Thread` objects
+        #
+        # Raises:
+        #     FBchatException: If request failed
+        # """
         threads = []
 
         last_thread_timestamp = None
@@ -294,15 +301,16 @@ class Client:
 
         return threads
 
-    async def fetchAllUsersFromThreads(self, threads):
-        """[Warning]: Don't use it. Fails to fetch.
-        Fetch all users involved in given threads.
+    async def fetchAllUsersFromThreads(self, threads)->List[User]:
+        """Fetch all users involved in given threads.
+        Sometimes It may fail to fetch if user is blocked.
+        It will be fixed later on.
 
         Args:
             threads: Thread: List of threads to check for users
 
         Returns:
-            list: :class:`User` objects
+            List[User]:  Returns list of User object with User Info.
 
         Raises:
             FBchatException: If request failed
@@ -327,10 +335,10 @@ class Client:
         return users
 
     async def fetchAllUsers(self):
-        """Fetch all users the client is currently chatting with.
+        """Fetch all users the Client is currently chatting with.
 
         Returns:
-            list: :class:`User` objects
+            List[User]:  User objects with Users info
 
         Raises:
             FBchatException: If request failed
@@ -347,17 +355,17 @@ class Client:
                 users.append(User._from_all_fetch(data))
         return users
 
-    async def fetchUserInfo(self, *user_ids)-> Dict[str, "User"]:
+    async def fetchUserInfo(self, *user_ids)-> Dict[str, User]:
         """Fetch users' info from IDs, unordered.
 
         Warning:
             Sends two requests, to fetch all available info!
 
         Args:
-            user_ids: One or more user ID(s) to query
+            user_ids: One or more user ID(s) to fetch
 
         Returns:
-            dict: :class:`User` objects, labeled by their ID
+            Dict[str, User]: Returns Dict with User objects, labeled by their ID.
 
         Raises:
             FBchatException: If request failed
@@ -373,14 +381,14 @@ class Client:
         return users
 
 
-    async def fetchGroupInfo(self, *group_ids):
+    async def fetchGroupInfo(self, *group_ids)-> Dict[str, Group]:
         """Fetch groups' info from IDs, unordered.
 
         Args:
-            group_ids: One or more group ID(s) to query
+            group_ids (str | List[str]): One or more group ID(s) to query
 
         Returns:
-            dict: :class:`Group` objects, labeled by their ID
+            Dict[str, Group]:  objects, labeled by their ID
 
         Raises:
             FBchatException: If request failed
@@ -451,12 +459,12 @@ class Client:
         """Fetch messages in a thread, ordered by most recent.
 
         Args:
-            thread_id: User/Group ID to get messages from. See :ref:`intro_threads`
+            thread_id (str): User/Group ID to get messages from. See :ref:`intro_threads`
             limit (int): Max. number of messages to retrieve
-            before (int): A timestamp, indicating from which point to retrieve messages
+            before (Optional[int]): A timestamp, indicating from which point to retrieve messages
 
         Returns:
-            list: :class:`Message` objects
+            List[Message]: Returns List of Message object with message info.
 
         Raises:
             FBchatException: If request failed
@@ -530,11 +538,11 @@ class Client:
         """Fetch `Message` object from the given message id.
 
         Args:
-            mid: Message ID to fetch from
-            thread_id: User/Group ID to get message info from. See :ref:`intro_threads`
+            mid (str): Message ID to fetch from
+            thread_id (str): User/Group ID to get message info from. See :ref:`intro_threads`
 
         Returns:
-            Message: :class:`Message` object
+            Message: Returns a Message object.
 
         Raises:
             FBchatException: If request failed
@@ -554,7 +562,7 @@ class Client:
             Only works when listening.
 
         Args:
-            user_id: ID of the user
+            user_id (str): ID of the user
 
         Returns:
             ActiveStatus: Given user active status
@@ -573,7 +581,7 @@ class Client:
         return message if isinstance(message, Message) else Message(text=message)
 
     async def _doSendRequest(self, data, get_thread_id=False):
-        """Send the data to `SendURL`, and returns the message ID or None on failure."""
+        # """Send the data to `SendURL`, and returns the message ID or None on failure."""
         mid, thread_id = await self._state.do_send_request(data)
         if get_thread_id:
             return mid, thread_id
@@ -584,9 +592,9 @@ class Client:
         """Send message to a thread.
 
         Args:
-            message (Message): Message to send
-            thread_id: User/Group ID to send to. See :ref:`intro_threads`
-            thread_type (ThreadType): See :ref:`intro_threads`
+            message (Message): Message object with message information (e.g. text, image, sticker, reply_to etc.)
+            thread_id (str): User/Group ID to send to. See :ref:`intro_threads`
+            thread_type (ThreadType): See ThreadType
 
         Returns:
             :ref:`Message ID <intro_message_ids>` of the sent message
@@ -601,11 +609,14 @@ class Client:
         return await self._doSendRequest(data)
 
     async def sendMessage(self, message: str, thread_id: str, thread_type = ThreadType.USER, reply_to_id: Optional[str] = None , mentions: Optional[List[str]] = None):
-        """message: the message you want to send 
-           thread_id: The thread message to send 
-           thread_type: Type of the thread
-           reply_to_id: ID of The message you want to reply
-           mentions: List of users uid to mention messages are automatically formatted.
+        """ Send message easily to messenger using this method.
+
+        Args:
+            message: the text message you want to send 
+            thread_id: The thread message to send 
+            thread_type: Type of the thread
+            reply_to_id: ID of The message you want to reply
+            mentions: List of users uid to mention messages are automatically formatted.
         """
         
         messageData = Message(text=message, reply_to_id=reply_to_id)
@@ -627,7 +638,15 @@ class Client:
             messageData = Message(text=message, reply_to_id=reply_to_id, mentions=mentionList)
         return await self.send(messageData, thread_id, thread_type)
 
-    async def shareContact(self, message, sender_id, thread_id):
+    async def shareContact(self, message: str, sender_id: str, thread_id: str):
+        """
+        Shares Messenger Contact with others using.
+
+        Args:
+            message (str): The message you want to send along with contact.
+            sender_id (str): The ID of the User Contact to share.
+            thread_id (str): The Thread ID to share the contact.
+        """
         self._wsReqNumber += 1 
         self._wsTaskNumber += 1 
         query_payload = {
@@ -662,7 +681,15 @@ class Client:
 
 
     async def sendMessageMqqtt(self, msg, thread_id, reply_to_message: Optional[str] = None):
-        """send messages through mqtt protocol. To reply to a message pass message ID"""
+        """
+        send messages through mqtt protocol. To reply to a message pass message ID. 
+        It works same way as  ``sendMessage()`` method.
+
+        Args:
+            msg (str): The message you want to send.
+            thread_id (str): The thread you want to message. 
+            reply_to_message (str): If you want to reply to a message pass the ``mid`` message ID.
+        """
         if isinstance(msg, str):
             msg = {"body": msg}
         elif not isinstance(msg, dict):
@@ -751,10 +778,10 @@ class Client:
     async def _sendFiles(
         self, files, message=None, thread_id=None, thread_type=ThreadType.USER
     ):
-        """Send files from file IDs to a thread.
-
-        `files` should be a list of tuples, with a file's ID and mimetype.
-        """
+        # """Send files from file IDs to a thread.
+        #
+        # `files` should be a list of tuples, with a file's ID and mimetype.
+        # """
         thread_id, thread_type = self._getThread(thread_id, thread_type)
         thread = thread_type._to_class()(thread_id)
         data = thread._to_send_data()
@@ -775,9 +802,9 @@ class Client:
         """Send local files to a thread.
 
         Args:
-            file_paths: Paths of files to upload and send
-            message: Additional message
-            thread_id: User/Group ID to send to. See :ref:`intro_threads`
+            file_paths (str): Paths of files to upload and send
+            message (str): Additional message
+            thread_id (str): User/Group ID to send to. See :ref:`intro_threads`
             thread_type (ThreadType): See :ref:`intro_threads`
 
         Returns:
@@ -801,9 +828,9 @@ class Client:
         """Send files from URLs to a thread.
 
         Args:
-            file_urls: URLs of files to upload and send
-            message: Additional message
-            thread_id: User/Group ID to send to. See :ref:`intro_threads`
+            file_urls (List[str]): URLs of files to upload and send
+            message (str): Additional message
+            thread_id (str): User/Group ID to send to. See :ref:`intro_threads`
             thread_type (ThreadType): See :ref:`intro_threads`
 
         Returns:
@@ -823,9 +850,9 @@ class Client:
         """Send local voice clips to a thread.
 
         Args:
-            clip_paths: Paths of clips to upload and send
-            message: Additional message
-            thread_id: User/Group ID to send to. See :ref:`intro_threads`
+            clip_paths (str): Paths of clips to upload and send
+            message (str): Additional message
+            thread_id (str): User/Group ID to send to. See :ref:`intro_threads`
             thread_type (ThreadType): See :ref:`intro_threads`
 
         Returns:
@@ -869,8 +896,8 @@ class Client:
         """Add users to a group.
 
         Args:
-            user_ids (list): One or more user IDs to add
-            thread_id: Group ID to add people to. See :ref:`intro_threads`
+            user_ids (List[str]): One or more user IDs to add
+            thread_id (str): Group ID to add people to. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -930,8 +957,8 @@ class Client:
         """Set specified users as group admins.
 
         Args:
-            admin_ids: One or more user IDs to set admin
-            thread_id: Group ID to remove people from. See :ref:`intro_threads`
+            admin_ids (str): One or more user IDs to set admin
+            thread_id (str): Group ID to remove people from. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -942,8 +969,8 @@ class Client:
         """Remove admin status from specified users.
 
         Args:
-            admin_ids: One or more user IDs to remove admin
-            thread_id: Group ID to remove people from. See :ref:`intro_threads`
+            admin_ids (str): One or more user IDs to remove admin
+            thread_id (str): Group ID to remove people from. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -954,8 +981,8 @@ class Client:
         """Change group's approval mode.
 
         Args:
-            require_admin_approval: True or False
-            thread_id: Group ID to remove people from. See :ref:`intro_threads`
+            require_admin_approval (bool): True or False
+            thread_id (str): Group ID to remove people from. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -985,8 +1012,8 @@ class Client:
         """Accept users to the group from the group's approval.
 
         Args:
-            user_ids: One or more user IDs to accept
-            thread_id: Group ID to accept users to. See :ref:`intro_threads`
+            user_ids (List(str)): One or more user IDs to accept
+            thread_id (str): Group ID to accept users to. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -997,8 +1024,8 @@ class Client:
         """Deny users from joining the group.
 
         Args:
-            user_ids: One or more user IDs to deny
-            thread_id: Group ID to deny users from. See :ref:`intro_threads`
+            user_ids (List[str]): One or more user IDs to deny
+            thread_id (str): Group ID to deny users from. See :ref:`intro_threads`
 
         Raises:
             FBchatException: If request failed
@@ -1007,15 +1034,15 @@ class Client:
 
 
     async def _changeGroupImage(self, image_id, thread_id=None):
-        """Change a thread image from an image id.
-
-        Args:
-            image_id: ID of uploaded image
-            thread_id: User/Group ID to change image. See :ref:`intro_threads`
-
-        Raises:
-            FBchatException: If request failed
-        """
+        # """Change a thread image from an image id.
+        #
+        # Args:
+        #     image_id: ID of uploaded image
+        #     thread_id: User/Group ID to change image. See :ref:`intro_threads`
+        #
+        # Raises:
+        #     FBchatException: If request failed
+        # """
         thread_id, thread_type = self._getThread(thread_id, None)
 
         data = {"thread_image_id": image_id, "thread_id": thread_id}
@@ -1238,6 +1265,7 @@ class Client:
         await self._payload_post("/ajax/mercury/mark_seen.php", {"seen_timestamp": now_time()})
 
     async def markAsReadAll(self):
+        """Marks all messages as seen"""
         form = {
             "folder": "inbox"
         }
@@ -1584,7 +1612,7 @@ class Client:
 
 
     async def listen(self, markAlive=None):
-        """Listens to all kinds of events for now only messages are listened. for more wait for update"""
+        """Listens to all kinds of events for now only messages and Messenger Group events are listened. For more wait for update"""
         if markAlive is not None:
             self.setActiveStatus(markAlive)
         if self._markAlive and self._mqtt:
@@ -1618,7 +1646,8 @@ class Client:
 
 
     def setActiveStatus(self, markAlive):
-        """Change active status while listening.
+        """ **Deprecated**
+        Change active status while listening.
 
         Args:
             markAlive (bool): Whether to show if client is active
@@ -1629,20 +1658,20 @@ class Client:
     EVENTS
     """
 
-    async def onLoggingIn(self, email=None):
-        """Called when the client is logging in.
-
-        Args:
-            email: The email of the client
-        """
-
-
-    async def onLoggedIn(self, email=None):
-        """Called when the client is successfully logged in.
-
-        Args:
-            email: The email of the client
-        """
+    # async def onLoggingIn(self, email=None):
+    #     """Called when the client is logging in.
+    #
+    #     Args:
+    #         email: The email of the client
+    #     """
+    #
+    #
+    # async def onLoggedIn(self, email=None):
+    #     """Called when the client is successfully logged in.
+    #
+    #     Args:
+    #         email: The email of the client
+    #     """
     async def onListening(self):
         """Called when the client is listening."""
 
@@ -1678,7 +1707,8 @@ class Client:
         metadata=None,
         msg=None,
     ):
-        """Called when received a new message in messenger 
+        """Called when received a new message in messenger. 
+        Above Arguments are received.
 
         Args:
             mid (str): message ID.
