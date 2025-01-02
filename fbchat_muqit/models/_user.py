@@ -160,6 +160,7 @@ class User(Thread):
 
 @dataclass(eq=False)
 class ActiveStatus:
+    """Represents Facebook Active Status"""
     #: Whether the user is active now
     active: bool
     #: Timestamp when the user was last active

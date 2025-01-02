@@ -12,7 +12,7 @@ import sys
 project = 'fbchat-muqit'
 copyright = '2025, Muhammad MuQiT'
 author = 'Muhammad MuQiT'
-release = '1.0.2'
+release = '1.0.3'
 version = release
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -30,19 +30,20 @@ extensions = [
 # Napoleon settings
 napoleon_google_docstring = True 
 napoleon_include_init_with_doc = True
-napoleon_use_param = True 
+napoleon_use_param = True
 napoleon_use_rtype = True
 
 # Autodoc settings
 autodoc_default_options = {
     'members': True,
-    'undoc-members': True,
-    'show-inheritance': True,
+    'undoc-members': False,
+    'show-inheritance': False,
     'private-members': False,  # Exclude private members
     'special-members': False,  # Exclude special methods
 }
 
 autodoc_member_order = "bysource"
+autodoc_class_signature = "separated"
 
 templates_path = ['_templates']
 exclude_patterns = []

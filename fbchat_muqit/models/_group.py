@@ -17,13 +17,13 @@ class Group(Thread):
     color: Optional[str] = None
     #: The groups's default emoji
     emoji: Optional[str] = None
-    # Set containing user IDs of thread admins
+    #: Set containing user IDs of thread admins
     admins: Optional[Set[str]] = field(default_factory=set)
-    # True if users need approval to join
+    #: True if users need approval to join
     approval_mode: Optional[bool] = None
-    # Set containing user IDs requesting to join
+    #: Set containing user IDs requesting to join
     approval_requests: Optional[Set[str]] = field(default_factory=set)
-    # Link for joining group
+    #: Link for joining group
     join_link: Optional[str] = None
 
     def __post_init__(self):
@@ -85,7 +85,7 @@ class Group(Thread):
 @dataclass(eq=False)
 class Room(Group):
     """Deprecated. Use `Group` instead."""
-    # True is room is not discoverable
+    #: True is room is not discoverable
     privacy_mode: Optional[bool] = None
 
     def __post_init__(self):

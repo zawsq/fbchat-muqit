@@ -32,10 +32,16 @@ To install the library, use:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Modules:
 
    fbchat_muqit
 
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Models:
+
+   models
 
 
 

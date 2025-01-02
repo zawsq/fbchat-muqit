@@ -16,6 +16,7 @@ from .n_util import (
 
 from .models import (
     Group, User, Page,
+    Thread,
     ThreadType, 
     ThreadLocation,
     ThreadColor,
@@ -48,7 +49,7 @@ ACONTEXT = {
 
 class Client:
 
-    listening = False
+    _listening = False
 
 
     @property
@@ -107,17 +108,17 @@ class Client:
     async def _payload_post(self, url, data, files=None):
         return await self._state._payload_post(url, data, files=files)
 
-    async def graphql_requests(self, *queries):
+    async def _graphql_requests(self, *queries):
 
         return tuple(await self._state._graphql_requests(*queries))
 
-    async def graphql_request(self, query):
+    async def _graphql_request(self, query):
         # """Shorthand for ``graphql_requests(query)[0]``.
         #
         # Raises:
         #     FBchatException: If request failed
         # """
-        return await self.graphql_requests(query)[0]
+        return await self._graphql_requests(query)[0]
 
     """
     END INTERNAL REQUEST METHODS
@@ -179,7 +180,7 @@ class Client:
             return given_thread_id, given_thread_type
 
 
-    def setDefaultThread(self, thread_id, thread_type):
+    def _setDefaultThread(self, thread_id, thread_type):
         # """Set default thread to send messages to.
         #
         # Args:
@@ -189,9 +190,9 @@ class Client:
         self._default_thread_id = thread_id
         self._default_thread_type = thread_type
 
-    def resetDefaultThread(self):
+    def _resetDefaultThread(self):
         # """Reset default thread."""
-        self.setDefaultThread(None, None)
+        self._setDefaultThread(None, None)
 
     """
     END DEFAULT THREAD METHODS
@@ -203,7 +204,7 @@ class Client:
 
     async def _forcedFetch(self, thread_id, mid):
         params = {"thread_and_message_id": {"thread_id": thread_id, "message_id": mid}}
-        (j,) = await self.graphql_requests(from_doc_id("1768656253222505", params))
+        (j,) = await self._graphql_requests(from_doc_id("1768656253222505", params))
         return j
 
 
@@ -244,23 +245,23 @@ class Client:
     
         return entries
 
-    async def fetchThreads(self, thread_location, before=None, after=None, limit=None):
-        # """Fetch all threads in ``thread_location``.
-        #
-        # Threads will be sorted from newest to oldest.
-        #
-        # Args:
-        #     thread_location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
-        #     before: Fetch only thread before this epoch (in ms) (default all threads)
-        #     after: Fetch only thread after this epoch (in ms) (default all threads)
-        #     limit: The max. amount of threads to fetch (default all threads)
-        #
-        # Returns:
-        #     list: :class:`Thread` objects
-        #
-        # Raises:
-        #     FBchatException: If request failed
-        # """
+    async def fetchThreads(self, thread_location, before=None, after=None, limit=None)-> List[Thread]:
+        """Fetch all threads in ``thread_location``.
+
+        Threads will be sorted from newest to oldest.
+
+        Args:
+            thread_location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
+            before: Fetch only thread before this epoch (in ms) (default all threads)
+            after: Fetch only thread after this epoch (in ms) (default all threads)
+            limit: The max. amount of threads to fetch (default all threads)
+
+        Returns:
+            List[Thread]: A List of Thread objects with Thread info
+
+        Raises:
+            FBchatException: If request failed
+        """
         threads = []
 
         last_thread_timestamp = None
@@ -415,7 +416,7 @@ class Client:
             }
             queries.append(from_doc_id("2147762685294928", params))
 
-        j = await self.graphql_requests(*queries)
+        j = await self._graphql_requests(*queries)
         for i, entry in enumerate(j):
             if entry.get("message_thread") is None:
                 # If you don't have an existing thread with this person, attempt to retrieve user data anyways
@@ -478,7 +479,7 @@ class Client:
             "load_read_receipts": True,
             "before": before,
         }
-        (j,) = await self.graphql_requests(from_doc_id("1860982147341344", params))
+        (j,) = await self._graphql_requests(from_doc_id("1860982147341344", params))
 
         if j.get("message_thread") is None:
             raise FBchatException("Could not fetch thread {}: {}".format(thread_id, j))
@@ -518,7 +519,7 @@ class Client:
             "includeDeliveryReceipts": True,
             "includeSeqID": False,
         }
-        (j,) = await self.graphql_requests(from_doc_id("1349387578499440", params))
+        (j,) = await self._graphql_requests(from_doc_id("1349387578499440", params))
 
         rtn = []
         for node in j["viewer"]["message_threads"]["nodes"]:
@@ -675,7 +676,7 @@ class Client:
         if self._mqtt:
             await self._mqtt._mqttClient.publish(topic="/ls_req", payload=json.dumps(context), qos=1)
 
-    def epoch_id(self):
+    def _epoch_id(self):
         self._variance = (self._variance + 0.1) % 5
         return int(now_time() * (4194304 + self._variance))
 
@@ -731,7 +732,7 @@ class Client:
                         "failure_count": None,
                     },
                 ],
-                "epoch_id": self.epoch_id(),
+                "epoch_id": self._epoch_id(),
                 "version_id": "6120284488008082",
                 "data_trace_id": None,
             },
@@ -1005,7 +1006,7 @@ class Client:
             "response": "ACCEPT" if approve else "DENY",
             "surface": "ADMIN_MODEL_APPROVAL_CENTER",
         }
-        await self.graphql_requests(from_doc_id("1574519202665847", {"data": data}))
+        await self._graphql_requests(from_doc_id("1574519202665847", {"data": data}))
 
 
     async def acceptUsersToGroup(self, user_ids: str | List[str], thread_id=None):
@@ -1596,12 +1597,12 @@ class Client:
             )
             # Backwards compat
             self.onQprimer(ts=now_time(), msg=None)
-        self.listening = True
+        self._listening = True
 
 
     async def stopListening(self):
         """Stop the listening loop."""
-        self.listening = False
+        self._listening = False
         await self._state._session.close()
         if not self._mqtt:
             return
@@ -1625,7 +1626,7 @@ class Client:
         if not self._mqtt:
             raise RuntimeError("Mqtt instance is None. It shouldn't be None. please initialise Mqtt class first")
 
-        while self.listening:
+        while self._listening:
                 
             async for messages in self._mqtt._mqttClient.messages:
                 try:

@@ -19,7 +19,14 @@ QuickReplies = Union[
 
 
 class EmojiSize(CustomEnum):
-    """Used to specify the size of a sent emoji."""
+    """
+    Specifies the size of an emoji sent in a message.
+
+    Attributes:
+        LARGE: Represents a large emoji.
+        MEDIUM: Represents a medium emoji.
+        SMALL: Represents a small emoji.
+    """
 
     LARGE = "369239383222810"
     MEDIUM = "369239343222814"
@@ -45,7 +52,19 @@ class EmojiSize(CustomEnum):
 
 
 class MessageReaction(CustomEnum):
-    """Used to specify a message reaction."""
+    """
+    Specifies the type of reaction to a message.
+
+    Attributes:
+        HEART: Represents a heart reaction.
+        LOVE: Represents a love reaction.
+        SMILE: Represents a smile reaction.
+        WOW: Represents a wow reaction.
+        SAD: Represents a sad reaction.
+        ANGRY: Represents an angry reaction.
+        YES: Represents a thumbs-up reaction.
+        NO: Represents a thumbs-down reaction.
+    """
 
     HEART = "❤"
     LOVE = "😍"
@@ -59,21 +78,34 @@ class MessageReaction(CustomEnum):
 
 @dataclass(eq=False)
 class Mention:
-    """Represents a ``@mention``."""
+    """
+    Represents a mention in a message.
 
-    #: The thread ID the mention is pointing at
+    Attributes:
+        thread_id: The ID of the thread being mentioned.
+        offset: The character offset where the mention starts.
+        length: The length of the mention.
+    """
     thread_id: str = field()
-    #: The character where the mention starts
     offset: int = field(default=0)
-    #: The length of the mention
     length: int = field(default=10)
 
 
 @dataclass(eq=False)
 class MessageFunc:
-    # message sender ID
+    """
+    Base class for message-related actions such as reacting, replying, and unsending.
+
+    Attributes:
+        uid: The unique identifier for the message.
+        client: Reference to the Client instance.
+        author: ID of the message sender.
+        thread_id: ID of the thread where the message belongs.
+        thread_type: Type of the thread (e.g., USER, GROUP).
+    """
+
     uid: str = field(init=False)
-    # The instance of client class
+
     client: Any = field(init=False)
 
     author: str = field(init=False)
@@ -89,6 +121,15 @@ class MessageFunc:
 
 
     async def react(self, reaction: str):
+        """
+        React to a message.
+
+        Args:
+            reaction: The reaction to apply, or None to remove the reaction.
+
+        Raises:
+            RuntimeError: If the reaction action fails.
+        """
         data = {
         "action": "ADD_REACTION" if reaction else "REMOVE_REACTION",
         "client_mutation_id": "1",
@@ -105,7 +146,14 @@ class MessageFunc:
         except Exception as e:
             raise RuntimeError("failed reacting: ", e)
 
+
     async def reply(self, message):
+        """
+        Reply to a message.
+
+        Args:
+            message: The text of the reply.
+        """
         data = {}
         if self.thread_type == ThreadType.USER:
             data = {
@@ -128,6 +176,12 @@ class MessageFunc:
 
 
     async def unsend(self):
+        """
+        Unsend (delete) the message if the author is the current user.
+
+        Prints:
+            Success message upon completion.
+        """
         if self.author == self.state.user_id:
             data = {"message_id": self.uid}
             await self.state._payload_post("/messaging/unsend_message/?dpr=1", data)
@@ -136,21 +190,22 @@ class MessageFunc:
 
 @dataclass(eq=False)
 class Message(MessageFunc):
-    """Represents a Facebook message."""
-
-    #: The actual message
+    """
+    Represents a Facebook message with its details.
+    """
+    #: The text of the message
     text: Optional[str] = field(default=None)
-    #: A list of :class:`Mention` objects
+    #: A list of Mention object
     mentions: List[Mention] = field(default_factory=list)
-    #: A :class:`EmojiSize`. Size of a sent emoji
+    #: The size of a sent emoji
     emoji_size: Optional[EmojiSize] = field(default=None)
-    #: The message ID
+    #: The ID of the message
     uid: str = field(init=False)
-    #: ID of the sender
+    #: The ID of the message sender
     author: str = field(init=False)
-    #: Timestamp of when the message was sent
+    #: The timestamp when the message was sent
     timestamp: Optional[int] = field(default=None, init=False)
-    #: Whether the message is read
+    #: 
     is_read: Optional[bool] = field(default=None, init=False)
     #: A list of people IDs who read the message, works only with :func:`fbchat.Client.fetchThreadMessages`
     read_by: List[str] = field(default_factory=list, init=False)
@@ -188,16 +243,16 @@ class Message(MessageFunc):
 
     @classmethod
     def formatMentions(cls, text, *args, **kwargs):
-        """Like `str.format`, but takes tuples with a thread id and text instead.
-
-        Return a `Message` object, with the formatted string and relevant mentions.
-
-        >>> Message.formatMentions("Hey {!r}! My name is {}", ("1234", "Peter"), ("4321", "Michael"))
-        <Message (None): "Hey 'Peter'! My name is Michael", mentions=[<Mention 1234: offset=4 length=7>, <Mention 4321: offset=24 length=7>] emoji_size=None attachments=[]>
-
-        >>> Message.formatMentions("Hey {p}! My name is {}", ("1234", "Michael"), p=("4321", "Peter"))
-        <Message (None): 'Hey Peter! My name is Michael', mentions=[<Mention 4321: offset=4 length=5>, <Mention 1234: offset=22 length=7>] emoji_size=None attachments=[]>
-        """
+        # """Like `str.format`, but takes tuples with a thread id and text instead.
+        #
+        # Return a `Message` object, with the formatted string and relevant mentions.
+        #
+        # >>> Message.formatMentions("Hey {!r}! My name is {}", ("1234", "Peter"), ("4321", "Michael"))
+        # <Message (None): "Hey 'Peter'! My name is Michael", mentions=[<Mention 1234: offset=4 length=7>, <Mention 4321: offset=24 length=7>] emoji_size=None attachments=[]>
+        #
+        # >>> Message.formatMentions("Hey {p}! My name is {}", ("1234", "Michael"), p=("4321", "Peter"))
+        # <Message (None): 'Hey Peter! My name is Michael', mentions=[<Mention 4321: offset=4 length=5>, <Mention 1234: offset=22 length=7>] emoji_size=None attachments=[]>
+        # """
         result = ""
         mentions = list()
         offset = 0
