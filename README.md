@@ -19,9 +19,7 @@ pip install fbchat-muqit
 
 ## Documentation
 
-The API is not Documented yet. However, It's design is similar to fbchat v1.9.7
-So you can look at [fbchat documentation](https://fbchat.readthedocs.io/en/stable/) until we release our Documentation for fbchat-muqit. While following fbchatv1.9.7 remember that fbchat-muqit is an asynchronous library while fbchat is synchronous.
-
+The API is not Fully Documented yet [Read Documentation](http://fbchat-muqit.rtfd.io/)
 
 ## 📖 Usage Example
 
@@ -38,7 +36,7 @@ class Test(Client):
         print("I'm Listening")
 
     async def onMessage(self, mid, author_id: str, message: str, message_object: Message, thread_id, thread_type=ThreadType.USER, **kwargs):
-        """you will rec"""
+        """you will receive all New messages here"""
 
         # author_id is message sender ID
         if author_id != self.uid:
@@ -62,9 +60,7 @@ async def main():
     if await bot.isLoggedIn():
         # fetch bot account
         fetch_bot = await bot.fetchUserInfo(bot.uid) # retuens dict {id: User}
-
         bot_info = fetch_bot[bot.uid] # access `User` object
-
         print("Logged in as", bot_info.name)
 
     try:
