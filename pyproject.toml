@@ -28,7 +28,6 @@ aiohttp = "^3.11.11"
 aiomqtt = "^2.3.0"
 aenum = "^3.1.15"
 yarl = "^1.18.3"
-sphinx-rtd-theme = "^3.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
