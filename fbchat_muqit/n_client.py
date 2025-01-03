@@ -400,7 +400,21 @@ class Client:
 
         return groups
 
-    async def fetchThreadInfo(self, *thread_ids):
+    async def fetchThreadInfo(self, *thread_ids)-> Dict[str, Thread]:
+        """Fetch threads' info from IDs, unordered.
+
+        Warning:
+            Sends two requests if users or pages are present, to fetch all available info!
+
+        Args:
+            thread_ids (str | List[str]): One or more thread ID(s) to query
+
+        Returns:
+            Dict[str, Thread]: Thread objects, labeled by their ID. It can User/Group/Page Thread.
+
+        Raises:
+            FBchatException: If request failed
+        """
         queries = []
         for thread_id in thread_ids:
             params = {
@@ -497,8 +511,20 @@ class Client:
 
     async def fetchThreadList(
         self, limit=20, thread_location=ThreadLocation.INBOX, before=None
-    ):
+    )->List[Thread]:
+        """Fetch the client's thread list.
 
+        Args:
+            limit (int): Max. number of threads to retrieve. Capped at 20
+            thread_location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
+            before (int): A timestamp (in milliseconds), indicating from which point to retrieve threads
+
+        Returns:
+            List[Thread]: Returns a List of Thread objects.
+
+        Raises:
+            FBchatException: If request failed
+        """
 
         if limit > 20 or limit < 1:
             raise FBchatUserError("`limit` should be between 1 and 20")
