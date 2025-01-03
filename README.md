@@ -39,7 +39,7 @@ async def main():
 
         """Lets send a Message to a friend when Client is logged in."""
 
-        await bot.sendMessage("I'm Online!", "61568481460158")
+        await bot.sendMessage("I'm Online!", "10000072727288")
         print("Logged in as", bot.uid)
     # listen to all incoming events
     await bot.listen()
