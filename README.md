@@ -94,8 +94,13 @@ asyncio.run(main())
 
 ```
 
-## 📄 License
+### 📄 License
 
-Distributed under the GPL-V3.0 License. See [LICENSE](./LICENSE.md) for more information.
+This project is distributed under a dual-license model:
 
+- BSD-3-Clause License: Parts of the code are reused and adapted from the original fbchat library, licensed under the BSD-3-Clause License. 
+  See [LICENSE-BSD](./LICENSE-BSD.md) for details.
+
+- GPL v3 License: New contributions and modifications by Muhammad MuQiT/togashigreat are licensed under the GPL v3.0 License.
+See [LICENSE](./LICENSE.md) for details.
 
