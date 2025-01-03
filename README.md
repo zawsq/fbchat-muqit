@@ -3,6 +3,8 @@
 # fbchat-muqit
 
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fbchat-muqit)
+![aiohttp - Python Version](https://img.shields.io/pypi/v/aiohttp)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **fbchat-muqit** An Unofficial Facebook Messenger API designed to interact with Facebook and Messenger. It is an early release. Most of the feautures are not available yet. 
 As It is Open Unofficial API we are not responsible if you get banned by Facebook. We recommend to use a dummy Facebook account.
@@ -17,27 +19,47 @@ You can install fbchat-muqit using pip:
 pip install fbchat-muqit
 ```
 
-## Documentation
+## 📙 Documentation
 
-The API is not Fully Documented yet [Read Documentation](http://fbchat-muqit.rtfd.io/)
+The API is not fully documented yet [Read Documentation](http://fbchat-muqit.rtfd.io/)
 
 ## 📖 Usage Example
 
-Some basic examples
+A basic example 
+
+```python
+import asyncio
+from fbchat_muqit import Client
+
+async def main():
+    cookies_path = "path to json cookies"
+    # Lets login in Facebook
+    bot = await Client.startSession(cookies_path)
+    if await bot.isLoggedIn():
+
+        """Lets send a Message to a friend when Client is logged in."""
+
+        await bot.sendMessage("I'm Online!", "61568481460158")
+        print("Logged in as", bot.uid)
+    # listen to all incoming events
+    await bot.listen()
+
+asyncio.run(main())
+
+```
+
+Subclassing Client class
 
 ```python
 
 from fbchat_muqit import Client, Message, ThreadType
 import asyncio
-
 # Create a class use Client as base Class
 class Test(Client):
-    async def onListening(self): #type: ignore
-        print("I'm Listening")
 
-    async def onMessage(self, mid, author_id: str, message: str, message_object: Message, thread_id, thread_type=ThreadType.USER, **kwargs):
-        """you will receive all New messages here"""
+    async def onMessage(self, mid, author_id: str, message_object: Message, thread_id, thread_type=ThreadType.USER, **kwargs):
 
+        """you will receive all messenger messages here every time anyone sends messages in a thread (Group/User)"""
         # author_id is message sender ID
         if author_id != self.uid:
             await message_object.reply("Hello! This is a reply")
@@ -45,23 +67,12 @@ class Test(Client):
             # mid is message ID
             await self.sendMessage("Hello", thread_id, thread_type, reply_to_id=mid)
 
-    async def onPeopleAdded(self, added_ids, author_id, thread_id, **kwargs):
-        # `added_ids` is a list of uid of the added people
-        thread_type = ThreadType.GROUP
-        mention = added_ids
-        if self.uid not in added_ids:
-            await self.sendMessage("Welcome to the Group!", thread_id, thread_type, mentions=mention)
-
-    # There a lot of methods available
 
 async def main():
-    cookies_path = "./c.json"
+    cookies_path = "path to json cookies"
     bot = await Test.startSession(cookies_path)
     if await bot.isLoggedIn():
-        # fetch bot account
-        fetch_bot = await bot.fetchUserInfo(bot.uid) # retuens dict {id: User}
-        bot_info = fetch_bot[bot.uid] # access `User` object
-        print("Logged in as", bot_info.name)
+        print("Logged in as", bot_info.uid)
 
     try:
         await bot.listen()
@@ -69,8 +80,7 @@ async def main():
         print(e)
 
 
-asyncio.run(main())
-
+asyncio.run(main()) 
 
 ```
 
