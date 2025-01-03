@@ -3,7 +3,7 @@
 # fbchat-muqit Facebook & Messenger API
 
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fbchat-muqit)
-[![fbchat-muqit version](https://badgen.net/pypi/v/fbchat-muqit/)](https://pypi.org/project/fbchat-muqit/)
+[![fbchat-muqit](https://badgen.net/pypi/v/fbchat-muqit/)](https://pypi.org/project/fbchat-muqit/)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **fbchat-muqit** An Unofficial Facebook Messenger API designed to interact with Facebook and Messenger. It is an early release. Most of the feautures are not available yet. 
