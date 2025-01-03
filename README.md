@@ -1,13 +1,13 @@
 <div align="center">
 
-# fbchat-muqit
+# fbchat-muqit Facebook & Messenger API
 
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fbchat-muqit)
-![aiohttp - Python Version](https://img.shields.io/pypi/v/aiohttp)
+[![fbchat-muqit version](https://badgen.net/pypi/v/fbchat-muqit/)](https://pypi.org/project/fbchat-muqit/)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **fbchat-muqit** An Unofficial Facebook Messenger API designed to interact with Facebook and Messenger. It is an early release. Most of the feautures are not available yet. 
-As It is Open Unofficial API we are not responsible if you get banned by Facebook. We recommend to use a dummy Facebook account.
+As It is an Unofficial API we are not responsible if you get banned by Facebook. We recommend to use a dummy Facebook account.
 
 </div>
 
@@ -19,13 +19,23 @@ You can install fbchat-muqit using pip:
 pip install fbchat-muqit
 ```
 
+## 🔧 Requirements
+
+- Python 3.9+
+- aiohttp
+- aiomqtt
+- aenum
+
+
 ## 📙 Documentation
 
 The API is not fully documented yet [Read Documentation](http://fbchat-muqit.rtfd.io/)
 
 ## 📖 Usage Example
 
-A basic example 
+To login in Facebook you will need Facebook account cookies. Since login via email and password is no longer supported. To get your Facebook account cookies. First login in your Facebook account and then add [C3C extension](https://github.com/c3cbot/c3c-ufc-utility) in your browser. Go back to your Facebook account and use this extension while you are on Facebook. You will get the cookies save the cookies in a json file. We will use the cookies to interact with Facebook server.
+
+A basic example of How to use it.
 
 ```python
 import asyncio
@@ -48,7 +58,7 @@ asyncio.run(main())
 
 ```
 
-Subclassing Client class
+Subclassing Client class. 
 
 ```python
 
@@ -83,4 +93,9 @@ async def main():
 asyncio.run(main()) 
 
 ```
+
+## 📄 License
+
+Distributed under the GPL-V3.0 License. See [LICENSE](./LICENSE.md) for more information.
+
 

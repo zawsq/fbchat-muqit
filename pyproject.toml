@@ -14,7 +14,6 @@ packages = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -25,7 +24,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.9"
 aiohttp = "^3.11.11"
 aiomqtt = "^2.3.0"
 aenum = "^3.1.15"
