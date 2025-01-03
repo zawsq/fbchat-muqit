@@ -3,7 +3,7 @@ User
 
 This Class Represents a Facebook User.
 
-.. automodule:: fbchat_muqit.models._user
+.. autoclass:: fbchat_muqit.User
    :members:
    :exclude-members: __init__
    :show-inheritance:

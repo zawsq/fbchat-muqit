@@ -3,7 +3,7 @@ Thread
 
 This Class Represents a Facebook Thread Can be group/user.
 
-.. automodule:: fbchat_muqit.models._thread
+.. autoclass:: fbchat_muqit.Thread
    :members:
    :exclude-members: __init__
    :show-inheritance:

@@ -15,7 +15,7 @@ from .n_client import Client
 from .n_state import State
 
 __title__ = "fbchat-muqit"
-__version__ = "1.0.3"
+__version__ = "1.0.4"
 __description__ = "A powerful Facebook Messenger Chat API to interact with Facebook and Messenger. Easy to use fast and efficient library"
 
 __copyright__ = "Copyright 2024 by Muhammad MuQiT"

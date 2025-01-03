@@ -40,12 +40,6 @@ def generate_offline_threading_id():
     """Generate an offline threading ID."""
     return str(int(time.time() * 1000))
 
-ACONTEXT = {
-    "action_history": [
-        {"surface": "messenger_chat_tab", "mechanism": "messenger_composer"}
-    ]
-}
-
 
 class Client:
 
@@ -92,7 +86,8 @@ class Client:
         except Exception as e:
             raise RuntimeError("Failed to log in Facebook: ", e)
 
-    async def getSession(self):
+    async def getSession(self)-> Dict:
+        """Returns Session Cookies"""
         return self._state.get_cookies()
             
     """
@@ -113,11 +108,11 @@ class Client:
         return tuple(await self._state._graphql_requests(*queries))
 
     async def _graphql_request(self, query):
-        # """Shorthand for ``graphql_requests(query)[0]``.
-        #
-        # Raises:
-        #     FBchatException: If request failed
-        # """
+        """Shorthand for ``graphql_requests(query)[0]``.
+
+        Raises:
+            FBchatException: If request failed
+        """
         return await self._graphql_requests(query)[0]
 
     """
@@ -142,6 +137,7 @@ class Client:
 
     async def setActiveMessenger(self, status_on: bool = True):
         """Sets messenger Status Active if True or Inactive if False By default It is True
+
         Args:
             status_on: (bool): Whether to set status active or not. 
         """
@@ -181,12 +177,12 @@ class Client:
 
 
     def _setDefaultThread(self, thread_id, thread_type):
-        # """Set default thread to send messages to.
-        #
-        # Args:
-        #     thread_id: User/Group ID to default to. See :ref:`intro_threads`
-        #     thread_type (ThreadType): See :ref:`intro_threads`
-        # """
+        """Set default thread to send messages to.
+
+        Args:
+            thread_id: User/Group ID to default to. See :ref:`intro_threads`
+            thread_type (ThreadType): See :ref:`intro_threads`
+        """
         self._default_thread_id = thread_id
         self._default_thread_type = thread_type
 

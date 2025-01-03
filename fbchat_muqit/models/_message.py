@@ -94,25 +94,24 @@ class Mention:
 @dataclass(eq=False)
 class MessageFunc:
     """
-    Base class for message-related actions such as reacting, replying, and unsending.
+    MessageFunc is the Base class for message-related actions such as reacting, replying, and unsending.
 
-    Attributes:
-        uid: The unique identifier for the message.
-        client: Reference to the Client instance.
-        author: ID of the message sender.
-        thread_id: ID of the thread where the message belongs.
-        thread_type: Type of the thread (e.g., USER, GROUP).
     """
 
     uid: str = field(init=False)
+    """The unique identifier for the message."""
 
     client: Any = field(init=False)
+    """client: Reference to the Client instance."""
 
     author: str = field(init=False)
+    """ID of the message sender."""
 
     thread_id: str = field(init=False)
+    """ID of the thread where the message belongs."""
 
     thread_type: Any = field(init=False)
+    """Type of the thread (e.g., USER, GROUP)."""
 
     @property
     def state(self):
@@ -191,40 +190,56 @@ class MessageFunc:
 @dataclass(eq=False)
 class Message(MessageFunc):
     """
-    Represents a Facebook message with its details.
+    Message class Represents a Facebook message with its details.
     """
-    #: The text of the message
+
     text: Optional[str] = field(default=None)
-    #: A list of Mention object
+    """The text of the message"""
+
     mentions: List[Mention] = field(default_factory=list)
-    #: The size of a sent emoji
+    """A list of Mention object"""
+
     emoji_size: Optional[EmojiSize] = field(default=None)
-    #: The ID of the message
+    """The size of a sent emoji"""
+
     uid: str = field(init=False)
-    #: The ID of the message sender
+    """The ID of the message"""
+
     author: str = field(init=False)
-    #: The timestamp when the message was sent
+    """The ID of the message sender"""
+
     timestamp: Optional[int] = field(default=None, init=False)
-    #: 
+    """The timestamp when the message was sent"""
+
     is_read: Optional[bool] = field(default=None, init=False)
-    #: A list of people IDs who read the message, works only with :func:`fbchat.Client.fetchThreadMessages`
+    """If the message was read by anyone or not"""
+
     read_by: List[str] = field(default_factory=list, init=False)
-    #: A dictionary with user's IDs as keys, and their :class:`MessageReaction` as values
+    """A list of people IDs who read the message, works only with :func:`~fbchat_muqit.Client.fetchThreadMessages`"""
+
     reactions: Dict[str, MessageReaction] = field(default_factory=dict, init=False)
-    #: A :class:`Sticker`
+    """A dictionary with user's IDs as keys, and their :class:`MessageReaction` as values"""
+
     sticker: Optional[_sticker.Sticker] = field(default=None)
-    #: A list of attachments
+    """A :class:`Sticker`"""
+
     attachments: List[_attachment.Attachment] = field(default_factory=list)
-    #: A list of :class:`QuickReply`
+    """A List of Attachment obeject"""
+
     quick_replies: Optional[List[QuickReplies]] = field(default_factory=list)
-    #: Whether the message is unsent (deleted for everyone)
+    """A list of :class:`QuickReply`"""
+
     unsent: bool = field(default=False, init=False)
-    #: Message ID you want to reply to
+    """Whether the message is unsent (deleted for everyone)"""
+
     reply_to_id: Optional[str] = field(default=None)
-    #: Replied message
-    replied_to: Optional["Message"] = field(default=None, init=False)
-    #: Whether the message was forwarded
+    """The message ID you want to reply"""
+
+    replied_to: Optional[Message] = field(default=None, init=False)
+    """Message object if the current message is a reply message"""
+    
     forwarded: bool = field(default=False, init=False)
+    """Whether The message was forwarded"""
 
 
 

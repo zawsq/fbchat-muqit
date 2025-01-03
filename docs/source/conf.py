@@ -8,17 +8,19 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath('../../'))
+
+from fbchat_muqit import __version__
 
 project = 'fbchat-muqit'
 copyright = '2025, Muhammad MuQiT'
 author = 'Muhammad MuQiT'
-release = '1.0.3'
+release = __version__
 version = release
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 # Add the path to the fbchat_muqit package
-sys.path.insert(0, os.path.abspath('../../'))
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -49,12 +51,11 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 
-
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'furo'
 html_static_path = ['_static']
 
-
+html_show_sphinx = False
 html_show_sourcelink = False

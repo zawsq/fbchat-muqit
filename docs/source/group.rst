@@ -3,7 +3,7 @@ Group
 
 This Class Represents a Facebook Messenger Group.
 
-.. automodule:: fbchat_muqit.models._group
+.. autoclass:: fbchat_muqit.Group
    :members:
    :exclude-members: __init__
    :show-inheritance:
