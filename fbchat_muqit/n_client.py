@@ -23,6 +23,8 @@ from .models import (
     ActiveStatus,
     Mention,
     Message,
+    MessageReaction,
+    LiveLocationAttachment,
     FBchatException,
     FBchatUserError
 )
@@ -1082,7 +1084,7 @@ class Client:
         Raises:
             FBchatException: If request failed
         """
-        ((image_id, mimetype),) = await self._upload(get_files_from_urls([image_url]))
+        ((image_id, mimetype),) = await self._upload(await get_files_from_urls([image_url]))
         return await self._changeGroupImage(image_id, thread_id)
 
     async def changeGroupImageLocal(self, image_path, thread_id=None):
@@ -1191,6 +1193,26 @@ class Client:
             "/messaging/save_thread_emoji/?source=thread_settings&dpr=1", data
         )
 
+
+    async def reactToMessage(self, message_id, reaction):
+        """React to a message, or removes reaction.
+
+        Args:
+            message_id: :ref:`Message ID <intro_message_ids>` to react to
+            reaction (MessageReaction): Reaction emoji to use, if None removes reaction
+
+        Raises:
+            FBchatException: If request failed
+        """
+        data = {
+            "action": "ADD_REACTION" if reaction else "REMOVE_REACTION",
+            "client_mutation_id": "1",
+            "actor_id": self._uid,
+            "message_id": str(message_id),
+            "reaction": reaction.value if reaction else None,
+        }
+        data = {"doc_id": 1491398900900362, "variables": json.dumps({"data": data})}
+        await self._payload_post("/webgraphql/mutation", data)
     """
 
     End Messenger GROUP methods
@@ -1288,11 +1310,92 @@ class Client:
         await self._payload_post("/ajax/mercury/mark_seen.php", {"seen_timestamp": now_time()})
 
     async def markAsReadAll(self):
-        """Marks all messages as seen"""
+        """Marks all messages as Read"""
         form = {
             "folder": "inbox"
         }
         await self._payload_post(prefix_url("/ajax/mercury/mark_folder_as_read.php"), form)
+    ### Thread Utils ###
+
+    async def moveThreads(self, location, thread_ids):
+        """Move threads to specified location.
+
+        Args:
+            location (ThreadLocation): INBOX, PENDING, ARCHIVED or OTHER
+            thread_ids: Thread IDs to move. See :ref:`intro_threads`
+
+        Returns:
+            True
+
+        Raises:
+            FBchatException: If request failed
+        """
+        thread_ids = require_list(thread_ids)
+
+        if location == ThreadLocation.PENDING:
+            location = ThreadLocation.OTHER
+
+        if location == ThreadLocation.ARCHIVED:
+            data_archive = dict()
+            data_unpin = dict()
+            for thread_id in thread_ids:
+                data_archive[f"ids[{thread_id}]"] = "true"
+                data_unpin[f"ids[{thread_id}]"] = "false"
+            j_archive = await self._payload_post(
+                "/ajax/mercury/change_archived_status.php?dpr=1", data_archive
+            )
+            j_unpin = await self._payload_post(
+                "/ajax/mercury/change_pinned_status.php?dpr=1", data_unpin
+            )
+        else:
+            data = dict()
+            for i, thread_id in enumerate(thread_ids):
+                data[f"{location.name.lower()}[{i}]"] = thread_id #type: ignore
+            await self._payload_post("/ajax/mercury/move_thread.php", data)
+        return True
+
+    async def deleteThreads(self, thread_ids):
+        """Delete threads.
+
+        Args:
+            thread_ids: Thread IDs to delete. See :ref:`intro_threads`
+
+        Returns:
+            True
+
+        Raises:
+            FBchatException: If request failed
+        """
+        thread_ids = require_list(thread_ids)
+
+        data_unpin = dict()
+        data_delete = dict()
+        for i, thread_id in enumerate(thread_ids):
+            data_unpin["ids[{}]".format(thread_id)] = "false"
+            data_delete["ids[{}]".format(i)] = thread_id
+        j_unpin = await self._payload_post(
+            "/ajax/mercury/change_pinned_status.php?dpr=1", data_unpin
+        )
+        j_delete = await self._payload_post(
+            "/ajax/mercury/delete_thread.php?dpr=1", data_delete
+        )
+        return True
+
+    async def markAsSpam(self, thread_id=None):
+        """Mark a thread as spam, and delete it.
+
+        Args:
+            thread_id: User/Group ID to mark as spam. See :ref:`intro_threads`
+
+        Returns:
+            True
+
+        Raises:
+            FBchatException: If request failed
+        """
+        thread_id, thread_type = self._getThread(thread_id, None)
+        await self._payload_post("/ajax/mercury/mark_spam.php?dpr=1", {"id": thread_id})
+        return True
 
     ###### Parse Events ######
     """
@@ -1513,11 +1616,140 @@ class Client:
                 msg=delta,
             )
 
+        # Message seen
+        elif delta_class == "ReadReceipt":
+            seen_by = str(delta.get("actorFbId") or delta["threadKey"]["otherUserFbId"])
+            seen_ts = int(delta["actionTimestampMs"])
+            delivered_ts = int(delta["watermarkTimestampMs"])
+            thread_id, thread_type = getThreadIdAndThreadType(delta)
+            await self.onMessageSeen(
+                seen_by=seen_by,
+                thread_id=thread_id,
+                thread_type=thread_type, #type: ignore
+                seen_ts=seen_ts,
+                ts=delivered_ts,
+                metadata=metadata,
+                msg=delta,
+            )
+
+        # Messages marked as seen
+        elif delta_class == "MarkRead":
+            seen_ts = int(
+                delta.get("actionTimestampMs") or delta.get("actionTimestamp")
+            )
+            delivered_ts = int(
+                delta.get("watermarkTimestampMs") or delta.get("watermarkTimestamp")
+            )
+
+            threads = []
+            if "folders" not in delta:
+                threads = [
+                    getThreadIdAndThreadType({"threadKey": thr})
+                    for thr in delta.get("threadKeys")
+                ]
+
+            # thread_id, thread_type = getThreadIdAndThreadType(delta)
+            await self.onMarkedSeen(
+                threads=threads,
+                seen_ts=seen_ts,
+                ts=delivered_ts,
+                metadata=delta,
+                msg=delta,
+            )
         elif delta_class == "ClientPayload":
             payload = json.loads("".join(chr(z) for z in delta["payload"]))
             ts = now_time()  # Hack
             for d in payload.get("deltas", []):
-                if d.get("deltaMessageReply"):
+
+                # Message reaction
+                if d.get("deltaMessageReaction"):
+                    i = d["deltaMessageReaction"]
+                    thread_id, thread_type = getThreadIdAndThreadType(i)
+                    mid = i["messageId"]
+                    author_id = str(i["userId"])
+                    reaction = (
+                        MessageReaction(i["reaction"]) if i.get("reaction") else None
+                    )
+                    add_reaction = not bool(i["action"])
+                    if add_reaction:
+                        await self.onReactionAdded(
+                            mid=mid,
+                            reaction=reaction,
+                            author_id=author_id,
+                            thread_id=thread_id,
+                            thread_type=thread_type,
+                            ts=ts,
+                            msg=delta,
+                        )
+                    else:
+                        await self.onReactionRemoved(
+                            mid=mid,
+                            author_id=author_id,
+                            thread_id=thread_id,
+                            thread_type=thread_type,
+                            ts=ts,
+                            msg=delta,
+                        )
+
+                # Viewer status change
+                elif d.get("deltaChangeViewerStatus"):
+                    i = d["deltaChangeViewerStatus"]
+                    thread_id, thread_type = getThreadIdAndThreadType(i)
+                    author_id = str(i["actorFbid"])
+                    reason = i["reason"]
+                    can_reply = i["canViewerReply"]
+                    if reason == 2:
+                        if can_reply:
+                            await self.onUnblock(
+                                author_id=author_id,
+                                thread_id=thread_id,
+                                thread_type=thread_type,
+                                ts=ts,
+                                msg=delta,
+                            )
+                        else:
+                            await self.onBlock(
+                                author_id=author_id,
+                                thread_id=thread_id,
+                                thread_type=thread_type,
+                                ts=ts,
+                                msg=delta,
+                            )
+
+                # Live location info
+                elif d.get("liveLocationData"):
+                    i = d["liveLocationData"]
+                    thread_id, thread_type = getThreadIdAndThreadType(i)
+                    for l in i["messageLiveLocations"]:
+                        mid = l["messageId"]
+                        author_id = str(l["senderId"])
+                        location = LiveLocationAttachment._from_pull(l)
+                        await self.onLiveLocation(
+                            mid=mid,
+                            location=location,
+                            author_id=author_id,
+                            thread_id=thread_id,
+                            thread_type=thread_type,
+                            ts=ts,
+                            msg=delta,
+                        )
+
+                # Message deletion
+                elif d.get("deltaRecallMessageData"):
+                    i = d["deltaRecallMessageData"]
+                    thread_id, thread_type = getThreadIdAndThreadType(i)
+                    mid = i["messageID"]
+                    ts = i["deletionTimestamp"]
+                    author_id = str(i["senderID"])
+                    await self.onMessageUnsent(
+                        mid=mid,
+                        author_id=author_id,
+                        thread_id=thread_id,
+                        thread_type=thread_type,
+                        ts=ts,
+                        msg=delta,
+                    )
+                elif d.get("deltaMessageReply"):
                     i = d["deltaMessageReply"]
                     metadata = i["message"]["messageMetadata"]
                     thread_id, thread_type = getThreadIdAndThreadType(metadata)
@@ -1618,7 +1850,7 @@ class Client:
                 foreground=False,
             )
             # Backwards compat
-            self.onQprimer(ts=now_time(), msg=None)
+            await self.onQprimer(ts=now_time(), msg=None)
         self._listening = True
 
 
@@ -1680,21 +1912,6 @@ class Client:
     """
     EVENTS
     """
-
-    # async def onLoggingIn(self, email=None):
-    #     """Called when the client is logging in.
-    #
-    #     Args:
-    #         email: The email of the client
-    #     """
-    #
-    #
-    # async def onLoggedIn(self, email=None):
-    #     """Called when the client is successfully logged in.
-    #
-    #     Args:
-    #         email: The email of the client
-    #     """
     async def onListening(self):
         """Called when the client is listening."""
 
@@ -1708,6 +1925,7 @@ class Client:
             Whether the loop should keep running
         """
         return True
+
     async def _onSeen(self, locations=None, ts=None, msg=None):
         """
         Todo:
@@ -1744,8 +1962,6 @@ class Client:
             metadata (Dict): Full data of the received message
             msg : Full messagw
         """
-        pass
-
     async def onReply(
         self,
         mid: str,
@@ -1773,7 +1989,6 @@ class Client:
         """
         pass
 
-
     async def onPendingMessage(
         self, thread_id=None, thread_type=None, metadata=None, msg=None
     ):
@@ -1787,7 +2002,6 @@ class Client:
             metadata: Extra metadata about the message
             msg: A full set of the data received
         """
-
     async def onColorChange(
         self,
         mid=None,
@@ -1811,7 +2025,6 @@ class Client:
             metadata: Extra metadata about the action
             msg: A full set of the data received
         """
-
     async def onEmojiChange(
         self,
         mid=None,
@@ -1835,7 +2048,6 @@ class Client:
             metadata: Extra metadata about the action
             msg: A full set of the data received
         """
-
     async def onTitleChange(
         self,
         mid=None,
@@ -1859,7 +2071,6 @@ class Client:
             metadata: Extra metadata about the action
             msg: A full set of the data received
         """
-
     async def onImageChange(
         self,
         mid=None,
@@ -1881,7 +2092,6 @@ class Client:
             ts: A timestamp of the action
             msg: A full set of the data received
         """
-
     async def onNicknameChange(
         self,
         mid=None,
@@ -1907,7 +2117,6 @@ class Client:
             metadata: Extra metadata about the action
             msg: A full set of the data received
         """
-
     async def onAdminAdded(
         self,
         mid: str,
@@ -2049,6 +2258,96 @@ class Client:
             msg: A full set of the data received
         """
 
+    async def onReactionAdded(
+        self,
+        mid: str,
+        reaction: MessageReaction,
+        author_id: str,
+        thread_id: str | None,
+        thread_type=None,
+        ts=None,
+        msg=None,
+    ):
+        """Called when the client is listening, and somebody reacts to a message.
+
+        Args:
+            mid: Message ID, that user reacted to
+            reaction (MessageReaction): Reaction
+            author_id: The ID of the person who reacted to the message
+            thread_id: Thread ID that the action was sent to. See :ref:`intro_threads`
+            thread_type (ThreadType): Type of thread that the action was sent to. See :ref:`intro_threads`
+            ts: A timestamp of the action
+            msg: A full set of the data received
+        """
+
+    async def onReactionRemoved(
+        self,
+        mid: str,
+        author_id: str,
+        thread_id: None | str,
+        thread_type=None,
+        ts=None,
+        msg=None,
+    ):
+        """Called when the client is listening, and somebody removes reaction from a message.
+
+        Args:
+            mid: Message ID, that user reacted to
+            author_id: The ID of the person who removed reaction
+            thread_id: Thread ID that the action was sent to. See :ref:`intro_threads`
+            thread_type (ThreadType): Type of thread that the action was sent to. See :ref:`intro_threads`
+            ts: A timestamp of the action
+            msg: A full set of the data received
+        """
+
+    async def onBlock(
+        self, author_id=None, thread_id=None, thread_type=None, ts=None, msg=None
+    ):
+        """Called when the client is listening, and somebody blocks client.
+
+        Args:
+            author_id: The ID of the person who blocked
+            thread_id: Thread ID that the action was sent to. See :ref:`intro_threads`
+            thread_type (ThreadType): Type of thread that the action was sent to. See :ref:`intro_threads`
+            ts: A timestamp of the action
+            msg: A full set of the data received
+        """
+
+    async def onUnblock(
+        self, author_id=None, thread_id=None, thread_type=None, ts=None, msg=None
+    ):
+        """Called when the client is listening, and somebody blocks client.
+
+        Args:
+            author_id: The ID of the person who unblocked
+            thread_id: Thread ID that the action was sent to. See :ref:`intro_threads`
+            thread_type (ThreadType): Type of thread that the action was sent to. See :ref:`intro_threads`
+            ts: A timestamp of the action
+            msg: A full set of the data received
+        """
+
+    async def onLiveLocation(
+        self,
+        mid=None,
+        location=None,
+        author_id=None,
+        thread_id=None,
+        thread_type=None,
+        ts=None,
+        msg=None,
+    ):
+        """Called when the client is listening and somebody sends live location info.
+
+        Args:
+            mid: The action ID
+            location (LiveLocationAttachment): Sent location info
+            author_id: The ID of the person who sent location info
+            thread_id: Thread ID that the action was sent to. See :ref:`intro_threads`
+            thread_type (ThreadType): Type of thread that the action was sent to. See :ref:`intro_threads`
+            ts: A timestamp of the action
+            msg: A full set of the data received
+        """
+
     async def onPeopleAdded(
         self,
         mid=None,
@@ -2097,7 +2396,7 @@ class Client:
             msg: A full set of the data received
         """
 
-    def onQprimer(self, ts=None, msg=None):
+    async def onQprimer(self, ts=None, msg=None):
         """Called when the client just started listening.
 
         Args:
