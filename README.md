@@ -17,6 +17,7 @@ You can install fbchat-muqit using pip:
 
 ```bash
 pip install fbchat-muqit
+
 ```
 
 ## 🔧 Requirements
