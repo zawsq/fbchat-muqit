@@ -70,11 +70,6 @@ jobs:
       - name: Publish release distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: dist/
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
           packages-dir: dist/  # Directory containing the .whl and .tar.gz files
         env:
           TWINE_USERNAME: __token__  # Username for PyPI (always __token__ for token-based authentication)
