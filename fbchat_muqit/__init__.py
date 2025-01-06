@@ -13,6 +13,7 @@ from .models import (
 )
 from .n_client import Client
 from .n_state import State
+from .n_util import configure_event_loop
 
 __title__ = "fbchat-muqit"
 __version__ = "1.0.7"
@@ -43,3 +44,4 @@ __all__ = [
     "Poll", "PollOption", "GuestStatus", "Plan" 
 
 ]
+configure_event_loop()

@@ -1,6 +1,8 @@
 import random
 import time
 import json
+import sys
+import asyncio
 from typing import List, Set, Tuple
 import aiohttp
 from os.path import basename 
@@ -32,6 +34,10 @@ def now_time()-> int:
     return int(time.time() * 1000)
 
 
+def configure_event_loop():
+    """Configure the asyncio event loop based on the Windows OS."""
+    if sys.platform.lower().startswith("win"):
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
 def to_json(content)-> dict:
     """Removes `for(;;);` (and other cruft) that preceeds JSON responses."""
@@ -163,7 +169,7 @@ def get_jsmods_require(j, index):
     if j.get("jsmods") and j["jsmods"].get("require"):
         try:
             return j["jsmods"]["require"][0][index][0]
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError):
             print(
                 "Error when getting jsmods_require: {}. Facebook might have changed protocol".format(j)
             )

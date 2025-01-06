@@ -3,7 +3,6 @@ import asyncio
 import json
 import time
 import random
-import sys
 from typing import Dict, List, Optional 
 
 from .n_util import (
@@ -44,11 +43,6 @@ def generate_offline_threading_id():
     return str(int(time.time() * 1000))
 
 
-def configure_event_loop():
-    """Configure the asyncio event loop based on the Windows OS."""
-    if sys.version_info >= (3, 8) and sys.platform.lower().startswith("win"):
-        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-
 
 class Client:
 
@@ -73,7 +67,6 @@ class Client:
         self._variance: float = 0 
 
 
-
     @classmethod
     async def startSession(cls, cookies_file_path: str)-> Client:
         """
@@ -85,7 +78,6 @@ class Client:
         Returns:
             Client: An instance of Client class to interact with Facebook & Messenger.
         """
-        configure_event_loop()
         try:
             state = await State.from_json_cookies(cookies_file_path)
             return cls(state=state)
