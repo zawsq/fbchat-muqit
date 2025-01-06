@@ -45,12 +45,10 @@ def generate_offline_threading_id():
 
 
 def configure_event_loop():
-    """Configure the asyncio event loop based on the operating system."""
-    if sys.platform == "win32":
-        current_policy = asyncio.get_event_loop_policy().__class__.__name__
-        if current_policy == "WindowsSelectorEventLoopPolicy":
-            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-            print("Configured asyncio to use ProactorEventLoop for Windows.")
+    """Configure the asyncio event loop based on the Windows OS."""
+    if sys.version_info >= (3, 8) and sys.platform.lower().startswith("win"):
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 
 class Client:
 
@@ -58,7 +56,7 @@ class Client:
     
     @property
     def uid(self):
-        """The ID of the client.
+        """The Facebook ID of the client.
         """
         return self._uid
         
@@ -73,7 +71,6 @@ class Client:
         self._wsReqNumber: int = 0
         self._wsTaskNumber: int = 0
         self._variance: float = 0 
-        configure_event_loop()
 
 
 
@@ -88,6 +85,7 @@ class Client:
         Returns:
             Client: An instance of Client class to interact with Facebook & Messenger.
         """
+        configure_event_loop()
         try:
             state = await State.from_json_cookies(cookies_file_path)
             return cls(state=state)

@@ -20,13 +20,6 @@ pip install fbchat-muqit
 
 ```
 
-## 🔧 Requirements
-
-- Python 3.9+
-- aiohttp
-- aiomqtt
-- aenum
-
 
 ## 📙 Documentation
 
@@ -40,7 +33,7 @@ A basic example of How to use it.
 
 ```python
 import asyncio
-from fbchat_muqit import Client
+from fbchat_muqit import Client, ThreadType
 
 async def main():
     cookies_path = "path to json cookies"
@@ -49,8 +42,8 @@ async def main():
     if await bot.isLoggedIn():
 
         """Lets send a Message to a friend when Client is logged in."""
-
-        await bot.sendMessage("I'm Online!", "10000072727288")
+                                        # put a valid fb user id
+        await bot.sendMessage("I'm Online!", "10000072727288", ThreadType.User)
         print("Logged in as", bot.uid)
     # listen to all incoming events
     await bot.listen()
@@ -94,6 +87,15 @@ async def main():
 asyncio.run(main()) 
 
 ```
+
+
+## 🔧 Requirements
+
+- Python 3.9+
+- aiohttp
+- aiomqtt
+- aenum
+
 
 ### 📄 License
 
