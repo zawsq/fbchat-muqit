@@ -487,8 +487,7 @@ class Message(MessageFunc):
         rtn.timestamp = timestamp
         rtn.client = client
         rtn.thread_id = thread_id
-        rtn.thread_type = thread_type
-
+        rtn.thread_type = thread_type 
         if data.get("data") and data["data"].get("prng"):
             try:
                 rtn.mentions = [
@@ -502,7 +501,7 @@ class Message(MessageFunc):
             except Exception:
                 print("An exception occured while reading attachments")
 
-        if data.get("attachments"):
+        if data.get("attachments") and data.get("attachments") != []:
             try:
                 for a in data["attachments"]:
                     mercury = a["mercury"]
@@ -543,7 +542,6 @@ class Message(MessageFunc):
                         data["attachments"]
                     )
                 )
-
         rtn.emoji_size = EmojiSize._from_tags(tags)
         rtn.forwarded = cls._get_forwarded_from_tags(tags)
         return rtn

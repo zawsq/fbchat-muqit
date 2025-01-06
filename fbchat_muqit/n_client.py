@@ -3,6 +3,7 @@ import asyncio
 import json
 import time
 import random
+import sys
 from typing import Dict, List, Optional 
 
 from .n_util import (
@@ -43,19 +44,24 @@ def generate_offline_threading_id():
     return str(int(time.time() * 1000))
 
 
+def configure_event_loop():
+    """Configure the asyncio event loop based on the operating system."""
+    if sys.platform == "win32":
+        current_policy = asyncio.get_event_loop_policy().__class__.__name__
+        if current_policy == "WindowsSelectorEventLoopPolicy":
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+            print("Configured asyncio to use ProactorEventLoop for Windows.")
+
 class Client:
 
     _listening = False
-
-
+    
     @property
     def uid(self):
         """The ID of the client.
-
-        Can be used as ``thread_id``. See :ref:`intro_threads` for more info.
         """
         return self._uid
-
+        
     def __init__(self, state: State):
         self._state: State = state
         self._uid = self._state.user_id
@@ -66,8 +72,8 @@ class Client:
         self._mqtt: Mqtt | None = None
         self._wsReqNumber: int = 0
         self._wsTaskNumber: int = 0
-        self._variance: float = 0
-        
+        self._variance: float = 0 
+        configure_event_loop()
 
 
 
@@ -1770,7 +1776,6 @@ class Client:
             # New message
         elif delta.get("class") == "NewMessage" and metadata:
             thread_id, thread_type = getThreadIdAndThreadType(metadata)
-            """received new messages from Facebook"""
             await self.onMessage(
                 mid=mid,
                 author_id=author_id,
@@ -1839,7 +1844,7 @@ class Client:
 
     async def startListening(self):
         """Start listening from an external event loop.
-
+        
         Raises:
             FBchatException: If request failed
         """
@@ -1849,7 +1854,7 @@ class Client:
                 chat_on=self._markAlive,
                 foreground=False,
             )
-            # Backwards compat
+            # Backwards compatibility
             await self.onQprimer(ts=now_time(), msg=None)
         self._listening = True
 
@@ -1874,6 +1879,7 @@ class Client:
             if self._markAlive != self._mqtt._chat_on:
                 await self._mqtt.set_chat_on(self._markAlive)
                 await self._mqtt.set_foreground(False)
+
         await self.startListening()
         await self.onListening()
 
@@ -1881,7 +1887,7 @@ class Client:
             raise RuntimeError("Mqtt instance is None. It shouldn't be None. please initialise Mqtt class first")
 
         while self._listening:
-                
+
             async for messages in self._mqtt._mqttClient.messages:
                 try:
                     topic = messages.topic.value
