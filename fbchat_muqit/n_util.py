@@ -94,11 +94,20 @@ async def check_request(response)-> str:
         raise ValueError("Error When sending request: Got empty response")
     return content
 
-def prefix_url(url: str)-> URL:
-    """Adds https://www.facebook.com"""
-    if str(url).startswith("/"):
-        return URL("https://www.facebook.com" + url)
+
+
+def prefix_url(url: str, host = None)-> URL:
+
+    """Adds https://www.facebook.com or https://web.facebook.com"""
+
+    if str(url).startswith("/") and host:
+        return URL(f"https://{host}{url}")
+
+    elif str(url).startswith("/"):
+        return URL(f"https://www.facebook.com{url}")
+
     return URL(url)
+
 
 
 def generateMessageID(client_id=None)-> str:

@@ -13,10 +13,9 @@ from .models import (
 )
 from .n_client import Client
 from .n_state import State
-from .n_util import configure_event_loop
 
 __title__ = "fbchat-muqit"
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 __description__ = "A powerful Facebook Messenger Chat API to interact with Facebook and Messenger. Easy to use fast and efficient library"
 
 __copyright__ = "Copyright 2024 by Muhammad MuQiT"
@@ -44,4 +43,3 @@ __all__ = [
     "Poll", "PollOption", "GuestStatus", "Plan" 
 
 ]
-configure_event_loop()

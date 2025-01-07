@@ -5,7 +5,7 @@ import re
 import random
 
 from yarl import URL
-from typing import Any, Dict
+from typing import Dict
 
 from dataclasses import dataclass, field
 from .n_util import * 
@@ -29,8 +29,8 @@ def get_session(cookies: Dict | None = None)-> aiohttp.ClientSession:
         "Accept-Encoding": "gzip", #, deflate, br",
         "Accept-Language": "en-US,en;q=0.9"
     } 
+
     session = aiohttp.ClientSession(headers=headers, cookies=cookies)
-    #    save_cookies_to_session(session, cookies)
 
     return session
 
@@ -44,30 +44,21 @@ def get_user_id(session: aiohttp.ClientSession)-> str:
 def client_id_factory()-> str:
       return hex(int(random.random() * 2 ** 31))[2:]
 
+def save_html(html):
+    with open("./test.html", "w") as f:
+        f.write(html)
 
 @dataclass
 class State:
 
-    HEADERS = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Referer": "https://www.facebook.com/",
-        "Host": "www.facebook.com",
-        "Origin": "https://www.facebook.com",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-        "Connection": "keep-alive",
-        "Sec-Fetch-Site": "same-origin",
-        "Sec-Fetch-User": "?1",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "Accept-Encoding": "gzip", #, deflate, br",
-        "Accept-Language": "en-US,en;q=0.9"
-    }
     user_id: str = field()
+    _host: str = field()
     _fb_dtsg: str = field()
     _revision: int | None = field()
     _client_id: str = field(default_factory=client_id_factory)
     _session: aiohttp.client.ClientSession = field(default_factory=get_session)
-    _logout_h: Any = field(default=None)
     _counter: int = field(default=0)
+    HEADERS : dict = field(default_factory=dict)
 
     def get_params(self):
         self._counter += 1
@@ -78,6 +69,15 @@ class State:
             "__rev": self._revision,
             "fb_dtsg": self._fb_dtsg
         }
+
+    def adjust_header(self, url):
+        host = str(URL(url).host)
+        url = f"https://{host}"
+        self.HEADERS["Host"] = host
+        self.HEADERS["Origin"] = url
+        self.HEADERS["Referer"] = f"{url}/"
+        return url
+
 
     @classmethod
     async def from_cookies(cls, cookies)-> State:
@@ -102,8 +102,21 @@ class State:
     @classmethod
     async def from_session(cls, session: aiohttp.client.ClientSession):
         user_id = get_user_id(session)
-        response = await session.get("https://www.facebook.com/")
-        results = await response.text()
+        url = "https://www.facebook.com/"
+        host = "www.facebook.com"
+
+        async with session.get(url, allow_redirects=False) as response:
+
+            if 300 <= response.status < 400:
+                """Due to the Changes in network sometimes need to change host"""
+                location = response.headers.get('Location')
+                host = str(URL(str(location)).host)
+                url = f"https://{host}/"
+                session.headers["Host"] = host
+                session.headers["Origin"] = f"https://{host}"
+                session.headers["Referer"] = url
+                response = await session.get(url)
+            results = await response.text()
 
         fb_dtsg = re.search(r'"DTSGInitialData".*?"token":"(.*?)"', results)
         if fb_dtsg:
@@ -116,20 +129,21 @@ class State:
 
         return cls(
             user_id = user_id,
+            _host = host,
             _fb_dtsg = fb_dtsg,
             _revision = clientRevision,
             _session = session,
-            _logout_h = None
+            HEADERS = dict(session.headers)
         )
 
     async def is_logged_in(self)-> bool:
         """Sends request to facebook to check login status"""
         try:
-            req = await self._session.get(prefix_url("/profile.php"), allow_redirects=False)
+            req = await self._session.get(f"https://{self._host}/profile.php", allow_redirects=False)
         except aiohttp.ClientError as e:
             raise Exception("Client Error: ", e)
         location = req.headers.get("Location")
-        return str(location) == f"https://www.facebook.com/profile.php?id={self.user_id}"
+        return str(location) == f"https://{self._host}/profile.php?id={self.user_id}"
 
 
 
@@ -151,7 +165,7 @@ class State:
 
     async def _get(self, url: str, params: Dict, error_retries=3):
         params.update(self.get_params())
-        response = await self._session.get(URL(prefix_url(url)), params=params)
+        response = await self._session.get(prefix_url(url, self._host), params=params)
         content = await check_request(response)
         json_data = to_json(content)
         try:
@@ -179,7 +193,7 @@ class State:
             # Let aiohttp automatically handle Content-Type
             headers.pop("Content-Type", None)
 
-        response = await self._session.post(URL(prefix_url(url)), data=data, headers=headers)
+        response = await self._session.post(prefix_url(url, self._host), data=data, headers=headers)
 
         content = await check_request(response)
         self._session._default_headers = self._session._prepare_headers(self.HEADERS)
