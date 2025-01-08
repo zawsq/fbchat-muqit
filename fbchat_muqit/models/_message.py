@@ -4,7 +4,7 @@ from dataclasses import field, dataclass
 import json
 from string import Formatter
 from typing import Any, List, Dict, Optional, Union
-from ._thread import ThreadType
+from ._thread import ThreadType, ThreadLocation
 from . import _attachment, _location, _file, _sticker
 from .. import _util
 from ._quick_reply import QuickReplyText, QuickReplyEmail, QuickReplyLocation, QuickReplyPhoneNumber, graphql_to_quick_reply
@@ -258,7 +258,6 @@ class Message(MessageFunc):
             self.emoji_size = EmojiSize(self.emoji_size)
     
 
-
     @classmethod
     def formatMentions(cls, text, *args, **kwargs):
         # """Like `str.format`, but takes tuples with a thread id and text instead.
@@ -447,7 +446,9 @@ class Message(MessageFunc):
         rtn.uid = metadata.get("messageId")
         rtn.author = str(metadata.get("actorFbId"))
         rtn.timestamp = metadata.get("timestamp")
-        rtn.location = metadata.get("folderId")
+        location = get_folder_tag(tags)
+        if location:
+            rtn.location = ThreadLocation._extend_if_invalid(location)
         rtn.client = client
         rtn.thread_id = thread_id
         rtn.thread_type = thread_type
@@ -496,7 +497,7 @@ class Message(MessageFunc):
         rtn.thread_id = thread_id
         rtn.thread_type = thread_type
         if data.get("messageMetadata"):
-            rtn.location = data["messageMetadata"].get("folderId")
+            rtn.location = ThreadLocation._extend_if_invalid(data["messageMetadata"]["folderId"]["systemFolderId"])
         if data.get("data") and data["data"].get("prng"):
             try:
                 rtn.mentions = [
@@ -555,6 +556,13 @@ class Message(MessageFunc):
         rtn.forwarded = cls._get_forwarded_from_tags(tags)
         return rtn
 
+
+def get_folder_tag(tags):
+    possible_values = ('inbox', 'archived', 'pending', 'other')
+    for value in possible_values:
+        if value in tags:
+            return value.upper()
+    return None
 
 def graphql_to_extensible_attachment(data):
     story = data.get("story_attachment")

@@ -106,7 +106,6 @@ class State:
         host = "www.facebook.com"
 
         async with session.get(url, allow_redirects=False) as response:
-
             if 300 <= response.status < 400:
                 """Due to the Changes in network sometimes need to change host"""
                 location = response.headers.get('Location')
