@@ -493,7 +493,7 @@ class Client:
             raise FBchatException("Could not fetch thread {}: {}".format(thread_id, j))
 
         messages = [
-            Message._from_graphql(message)
+            Message._from_graphql(message, self, thread_id, thread_type)
             for message in j["message_thread"]["messages"]["nodes"]
         ]
         messages.reverse()
@@ -570,7 +570,7 @@ class Client:
         """
         thread_id, thread_type = self._getThread(thread_id, None)
         message_info = await self._forcedFetch(thread_id, mid).get("message")
-        return Message._from_graphql(message_info)
+        return Message._from_graphql(message_info, self, thread_id, thread_type)
 
 
     

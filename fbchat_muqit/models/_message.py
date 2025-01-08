@@ -363,7 +363,7 @@ class Message(MessageFunc):
         return data
 
     @classmethod
-    def _from_graphql(cls, data)-> Message:
+    def _from_graphql(cls, data, client, thread_id, thread_type)-> Message:
         if data is None:
             return
         if data.get("message_sender") is None:
@@ -389,6 +389,9 @@ class Message(MessageFunc):
         rtn.author = str(data["message_sender"]["id"])
         rtn.timestamp = data.get("timestamp_precise")
         rtn.unsent = False
+        rtn.client = client
+        rtn.thread_id = thread_id
+        rtn.thread_type = thread_type
         if data.get("unread") is not None:
             rtn.is_read = not data["unread"]
         rtn.reactions = {
@@ -419,7 +422,7 @@ class Message(MessageFunc):
             elif attachment:
                 rtn.attachments.append(attachment)
         if data.get("replied_to_message") is not None:
-            rtn.replied_to = cls._from_graphql(data["replied_to_message"]["message"])
+            rtn.replied_to = cls._from_graphql(data["replied_to_message"]["message"], client, thread_id, thread_type)
             print("this is replied_to: ", rtn.replied_to)
             if rtn.replied_to is not None:
                 rtn.reply_to_id = rtn.replied_to.uid
