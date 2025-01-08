@@ -76,7 +76,9 @@ async def main():
     cookies_path = "path to json cookies"
     bot = await Test.startSession(cookies_path)
     if await bot.isLoggedIn():
-        print("Logged in as", bot_info.uid)
+        fetch_client_info = await self.fetchUserInfo(bot.uid)
+        client_info = fetch_client_info[bot.uid]
+        print("Logged in as", bot.name)
 
     try:
         await bot.listen()
