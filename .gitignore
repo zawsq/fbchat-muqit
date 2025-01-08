@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 .venv/
 poetry.lock
+ep.py
 dist/
 build/
 *.egg-info/
