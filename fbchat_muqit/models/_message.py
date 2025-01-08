@@ -237,6 +237,9 @@ class Message(MessageFunc):
 
     replied_to: Optional[Message] = field(default=None, init=False)
     """Message object if the current message is a reply message"""
+
+    location: Optional[str] = field(default=None)
+    """Thread location of the message INBOX, ARCHAIVE, SPAM etc."""
     
     forwarded: bool = field(default=False, init=False)
     """Whether The message was forwarded"""
@@ -444,6 +447,7 @@ class Message(MessageFunc):
         rtn.uid = metadata.get("messageId")
         rtn.author = str(metadata.get("actorFbId"))
         rtn.timestamp = metadata.get("timestamp")
+        rtn.location = metadata.get("folderId")
         rtn.client = client
         rtn.thread_id = thread_id
         rtn.thread_type = thread_type
@@ -490,7 +494,9 @@ class Message(MessageFunc):
         rtn.timestamp = timestamp
         rtn.client = client
         rtn.thread_id = thread_id
-        rtn.thread_type = thread_type 
+        rtn.thread_type = thread_type
+        if data.get("messageMetadata"):
+            rtn.location = data["messageMetadata"].get("folderId")
         if data.get("data") and data["data"].get("prng"):
             try:
                 rtn.mentions = [
