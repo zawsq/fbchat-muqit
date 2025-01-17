@@ -43,7 +43,6 @@ def generate_offline_threading_id():
     return str(int(time.time() * 1000))
 
 
-
 class Client:
 
     _listening = False
@@ -111,7 +110,8 @@ class Client:
         Raises:
             FBchatException: If request failed
         """
-        return await self._graphql_requests(query)[0]
+        data = await self._graphql_requests(query)
+        return data[0]
 
     """
     END INTERNAL REQUEST METHODS
@@ -155,6 +155,38 @@ class Client:
         }
         await self._payload_post("/webgraphql/mutation", data)
 
+    # async def sendActivte(self):
+    #     data = {
+    #         "fb_api_caller_class": "RelayModern",
+    #         "fb_api_req_friendly_name": "MWChatSettingsQuery",
+    #         "variables": {},
+    #         "server_timestamps": True,
+    #         "doc_id": "5248437728509060",
+    #         "dpr": 3
+    #     }
+    #     await self._post(prefix_url("/api/graphql"), data)
+
+
+    async def updateActiveMutation(self):
+        """
+        Updates User Last Active Status.
+
+        Warning: Test Don't Use this.
+        """
+        variables = {
+            "input": {
+                "actor_id": str(self.uid),
+                "client_mutation_id":"0"
+            }
+        }
+
+        data = {
+            "fb_api_caller_class": "RelayModern",
+            "fb_api_req_friendly_name": "UpdateUserLastActiveMutation",
+            "variables": json.dumps(variables),
+            "doc_id": 4844391925651372
+        }
+        await self._payload_post("/webgraphql/mutation", data)
 
     def _getThread(self, given_thread_id=None, given_thread_type=None):
         """Check if thread ID is given and if default is set, and return correct values.
@@ -424,7 +456,13 @@ class Client:
             }
             queries.append(from_doc_id("2147762685294928", params))
 
-        j = await self._graphql_requests(*queries)
+        j = []
+        for q in queries:
+            try:
+                data = await self._graphql_request(q)
+                j.append(data)
+            except Exception as e:
+                print("Couldn't fetch User/Thread. Thread or User is either doesn't exist/deactivatedor blocked in Facebook. ID: ", q["query_params"]["id"])
         for i, entry in enumerate(j):
             if entry.get("message_thread") is None:
                 # If you don't have an existing thread with this person, attempt to retrieve user data anyways
@@ -1811,6 +1849,14 @@ class Client:
             for delta in m["deltas"]:
                 await self._parseDelta(delta)
 
+        elif topic == "inbox":
+            await self.onInbox(
+                unseen=m["unseen"],
+                unread=m["unread"],
+                recent_unread=m["recent_unread"],
+                msg=m,
+            )
+
         # Chat timestamp / Buddylist overlay
         elif topic == "/orca_presence":
             if m["list_type"] == "full":
@@ -1830,7 +1876,7 @@ class Client:
         try:
             await self._parse_payload(topic, data)
         except Exception as e:
-            print(f"exception: {e}, \nmessage: {data}")
+            print(e)
 
     async def startListening(self):
         """Start listening from an external event loop.
@@ -1842,7 +1888,7 @@ class Client:
             self._mqtt = await Mqtt.connect(
                 state=self._state,
                 chat_on=self._markAlive,
-                foreground=False,
+                foreground=True,
             )
             # Backwards compatibility
             await self.onQprimer(ts=now_time(), msg=None)
@@ -1861,14 +1907,13 @@ class Client:
         self._mqtt = None
 
 
-    async def listen(self, markAlive=None):
+    async def listen(self, markAlive=True):
         """Listens to all kinds of events for now only messages and Messenger Group events are listened. For more wait for update"""
         if markAlive is not None:
             self.setActiveStatus(markAlive)
         if self._markAlive and self._mqtt:
-            if self._markAlive != self._mqtt._chat_on:
                 await self._mqtt.set_chat_on(self._markAlive)
-                await self._mqtt.set_foreground(False)
+                await self._mqtt.set_foreground(True)
 
         await self.startListening()
         await self.onListening()
@@ -1884,7 +1929,8 @@ class Client:
                     message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
                     await self._parse_message(topic, message)
                 except Exception as e:
-                    raise RuntimeError("Got errors inside loop: ", e)
+                    #raise RuntimeError
+                    print("Got errors While listening: ", e)
 
         await self.stopListening()
 
@@ -1932,6 +1978,12 @@ class Client:
             ts: A timestamp of the action
             msg: A full set of the data received
         """
+
+    async def onInbox(self, unseen=None, unread=None, recent_unread=None, msg=None):
+        """
+        Called when some sends message requests
+        """
+
     async def onMessage(
         self,
         mid: str,

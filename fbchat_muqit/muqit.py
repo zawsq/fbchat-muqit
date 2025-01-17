@@ -80,11 +80,11 @@ class Mqtt:
             "/orca_typing_notifications",
             "/orca_presence",
             "/legacy_web", "/br_sr", "/sr_res",
-            "ls_resp",
+            "/ls_req",
+            "/ls_resp",
             "/webrtc",
             "/onevc",
             "/notify_disconnect",
-            "/inbox",
             "/mercury",
             "/messaging_events",
             "/orca_message_notifications",
@@ -120,7 +120,7 @@ class Mqtt:
             "Host": self._HOST
         }
         self._mqttClient._client.ws_set_options(
-            path="/chat?sid={}".format(session_id), headers=headers
+            path=f"/chat?sid={session_id}", headers=headers
         )
         
     
@@ -145,27 +145,27 @@ class Mqtt:
 
         await self._mqttClient.publish(topic, _util.json_minimal(payload), qos=1)
 
-    def _on_connect_client(self, client, userdata, flags, reason_code) -> None:
-        """Called when we receive a CONNACK message from the broker."""
-        if self._mqttClient._connected.done():
-            pass
-        if reason_code == mqtt.CONNACK_ACCEPTED:
-            self._mqttClient._connected.set_result(None)
-        else:
-            # We received a negative CONNACK response
-            self._mqttClient._connected.set_exception(MqttConnectError(reason_code))
+    # def _on_connect_client(self, client, userdata, flags, reason_code) -> None:
+    #     """Called when we receive a CONNACK message from the broker."""
+    #     if self._mqttClient._connected.done():
+    #         pass
+    #     if reason_code == mqtt.CONNACK_ACCEPTED:
+    #         self._mqttClient._connected.set_result(None)
+    #     else:
+    #         # We received a negative CONNACK response
+    #         self._mqttClient._connected.set_exception(MqttConnectError(reason_code))
 
 
     async def disconnect(self):
         await self._mqttClient.__aexit__(None, None, None)
 
     async def set_foreground(self, value):
-        payload = _util.json_minimal({"foreground": self._chat_on})
+        payload = _util.json_minimal({"foreground": value})
         await self._mqttClient.publish("/foreground_state", payload=payload, qos=1)
         self._foreground = value
 
     async def set_chat_on(self, value):
-        data = {"make_user_available_when_in_foreground": True}
+        data = {"make_user_available_when_in_foreground": value}
         payload = _util.json_minimal(data)
         await self._mqttClient.publish("/set_client_settings", payload=payload, qos=1)
         self._chat_on = value
