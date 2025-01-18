@@ -43,7 +43,7 @@ async def main():
 
         """Lets send a Message to a friend when Client is logged in."""
                                         # put a valid fb user id
-        await bot.sendMessage("I'm Online!", "10000072727288", ThreadType.User)
+        await bot.sendMessage("I'm Online!", "10000072727288", ThreadType.USER)
         print("Logged in as", bot.uid)
     # listen to all incoming events
     await bot.listen()
