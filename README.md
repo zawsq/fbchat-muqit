@@ -6,7 +6,7 @@
 [![fbchat-muqit](https://badgen.net/pypi/v/fbchat-muqit/)](https://pypi.org/project/fbchat-muqit/)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-**fbchat-muqit** An Unofficial Facebook Messenger API designed to interact with Facebook and Messenger. It is an early release. Most of the feautures are not available yet. 
+**fbchat-muqit** An Unofficial Asynchronous Facebook Messenger API designed to interact with Facebook and Messenger. It is an early release. Most of the feautures are not available yet. 
 As It is an Unofficial API we are not responsible if you get banned by Facebook. We recommend to use a dummy Facebook account.
 
 </div>
