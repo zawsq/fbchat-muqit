@@ -1926,13 +1926,9 @@ class Client:
         while self._listening:
             try:
                 async for messages in self._mqtt._mqttClient.messages:
-                    try:
-                        topic = messages.topic.value
-                        message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
-                        await self._parse_message(topic, message)
-                    except Exception as e:
-                        #raise RuntimeError
-                        print("Got errors While listening: ", e)
+                    topic = messages.topic.value
+                    message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
+                    await self._parse_message(topic, message)
             except MqttError:
                 await asyncio.sleep(5)
 
