@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import aiomqtt
-import paho.mqtt.client as mqtt
 import random
 import aiohttp
 
@@ -10,7 +9,6 @@ from typing import Any
 from yarl import URL
 
 from . import _graphql, _util
-from aiomqtt.exceptions import MqttConnectError
 from .n_state import State
 
 

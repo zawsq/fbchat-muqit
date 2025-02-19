@@ -463,7 +463,7 @@ class Client:
             try:
                 data = await self._graphql_request(q)
                 j.append(data)
-            except Exception as e:
+            except Exception:
                 print("Couldn't fetch User/Thread. Thread or User is either doesn't exist/deactivatedor blocked in Facebook. ID: ", q["query_params"]["id"])
         for i, entry in enumerate(j):
             if entry.get("message_thread") is None:
@@ -1924,17 +1924,17 @@ class Client:
             raise RuntimeError("Mqtt instance is None. It shouldn't be None. please initialise Mqtt class first")
 
         while self._listening:
-
-            async for messages in self._mqtt._mqttClient.messages:
-                try:
-                    topic = messages.topic.value
-                    message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
-                    await self._parse_message(topic, message)
-                except MqttError:
-                    await asyncio.sleep(5)
-                except Exception as e:
-                    #raise RuntimeError
-                    print("Got errors While listening: ", e)
+            try:
+                async for messages in self._mqtt._mqttClient.messages:
+                    try:
+                        topic = messages.topic.value
+                        message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
+                        await self._parse_message(topic, message)
+                    except Exception as e:
+                        #raise RuntimeError
+                        print("Got errors While listening: ", e)
+            except MqttError:
+                await asyncio.sleep(5)
 
         await self.stopListening()
 
