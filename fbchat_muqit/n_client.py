@@ -5,6 +5,8 @@ import time
 import random
 from typing import Dict, List, Optional 
 
+from aiomqtt import MqttError
+
 from .n_util import (
     now_time,
     mimetype_to_key,
@@ -1928,6 +1930,8 @@ class Client:
                     topic = messages.topic.value
                     message = self._do_parse_json(messages.payload.decode("utf-8")) #type: ignore
                     await self._parse_message(topic, message)
+                except MqttError:
+                    await asyncio.sleep(5)
                 except Exception as e:
                     #raise RuntimeError
                     print("Got errors While listening: ", e)
