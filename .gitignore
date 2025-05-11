@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 .venv/
 poetry.lock
+test.html
 ep.py
 dist/
 build/

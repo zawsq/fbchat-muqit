@@ -78,7 +78,7 @@ async def main():
     if await bot.isLoggedIn():
         fetch_client_info = await bot.fetchUserInfo(bot.uid)
         client_info = fetch_client_info[bot.uid]
-        print("Logged in as", bot.name)
+        print("Logged in as", client_info.name)
 
     try:
         await bot.listen()

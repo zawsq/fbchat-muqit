@@ -1,7 +1,9 @@
+# Facebook Messenger uses Mqtt protocol to send and receive messages. This File handles Mqtt broker. 
+
+
 from __future__ import annotations
 
 import aiomqtt
-import paho.mqtt.client as mqtt
 import random
 import aiohttp
 
@@ -10,7 +12,6 @@ from typing import Any
 from yarl import URL
 
 from . import _graphql, _util
-from aiomqtt.exceptions import MqttConnectError
 from .n_state import State
 
 
@@ -74,6 +75,7 @@ class Mqtt:
 
     def _configure_connect_options(self)-> None:
         session_id = generate_session_id()
+        # The topics fbchat-muqit will listen to 
         topics = [
             "/t_ms",
             "/thread_typing",
