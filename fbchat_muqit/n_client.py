@@ -1932,7 +1932,6 @@ class Client:
                     #raise RuntimeError
                     print("Got errors While listening: ", e)
 
-        await self.stopListening()
 
     def _do_parse_json(self, data):
         try:

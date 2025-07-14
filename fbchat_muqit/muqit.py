@@ -15,6 +15,15 @@ from . import _graphql, _util
 from .n_state import State
 
 
+def generate_session_id()-> int:
+    return random.randint(1, 2 ** 53)
+
+
+def get_cookie_header(session: aiohttp.ClientSession, url: str) -> str:
+    return session.cookie_jar.filter_cookies(URL(url)).output(header="", sep=";").lstrip()
+
+
+
 @dataclass(slots=True)
 class Mqtt:
     _state: State = field()
@@ -77,20 +86,35 @@ class Mqtt:
         session_id = generate_session_id()
         # The topics fbchat-muqit will listen to 
         topics = [
+            "/legacy_web", 
             "/t_ms",
+
+            "/rtc_multi",
             "/thread_typing",
             "/orca_typing_notifications",
             "/orca_presence",
-            "/legacy_web", "/br_sr", "/sr_res",
+
+            "/br_sr", 
+            "/sr_res",
+
             "/ls_req",
             "/ls_resp",
+
             "/webrtc",
+
             "/onevc",
+
             "/notify_disconnect",
+
             "/mercury",
+            "/inbox",
+
             "/messaging_events",
+
             "/orca_message_notifications",
+
             "/pp",
+
             "/webrtc_response",
         ]
         username = {
@@ -110,6 +134,9 @@ class Mqtt:
             "no_auto_fg": True,
             "gas": None,
             "pack": [],
+            "p": None,
+            "aids": None,
+            "php_override": ""
         }
         self._mqttClient._client.username_pw_set(_util.json_minimal(username))
 
@@ -171,11 +198,4 @@ class Mqtt:
         payload = _util.json_minimal(data)
         await self._mqttClient.publish("/set_client_settings", payload=payload, qos=1)
         self._chat_on = value
-
-def generate_session_id()-> int:
-    return random.randint(1, 2 ** 53)
-
-
-def get_cookie_header(session: aiohttp.ClientSession, url: str) -> str:
-    return session.cookie_jar.filter_cookies(URL(url)).output(header="", sep=";").lstrip()
 
