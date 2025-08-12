@@ -7,7 +7,7 @@ from .models import FBchatException
 
 def split_json_objects(json_string: str)-> List[Dict[str, Any]]:
     # Remove very long spaces
-    json_string = "".join(json_string.split())
+    json_string = " ".join(json_string.split())
     # Json string contains list of json objects without the `[` and `]` 
 
     # We need to parse them into a list of Dict in order to use json.loads()
