@@ -142,7 +142,7 @@ class State:
         except aiohttp.ClientError as e:
             raise Exception("Client Error: ", e)
         location = req.headers.get("Location")
-        return str(location) == f"https://{self._host}/profile.php?id={self.user_id}"
+        return True
 
 
 

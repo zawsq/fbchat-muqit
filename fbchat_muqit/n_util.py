@@ -236,6 +236,7 @@ def get_cookie(json_path: str) -> dict:
     with open(json_path, "r") as f:
         data = json.load(f)
     cookies = {}
+    key_name = "key" if "key" in data[0] else "name"
     for cookie in data:
-        cookies[cookie["key"]] = cookie["value"]
+        cookies[cookie[key_name]] = cookie["value"]
     return cookies

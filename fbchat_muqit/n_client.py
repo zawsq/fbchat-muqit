@@ -1932,7 +1932,6 @@ class Client:
             except MqttError:
                 await asyncio.sleep(5)
 
-        await self.stopListening()
 
     def _do_parse_json(self, data):
         try:
