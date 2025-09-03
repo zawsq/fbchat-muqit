@@ -366,8 +366,11 @@ class Message(MessageFunc):
 
     @classmethod
     def _from_graphql(cls, data, client, thread_id, thread_type)-> Message:
+
         if data is None:
             return
+
+        print(data.get("message"))
         if data.get("message_sender") is None:
             data["message_sender"] = {}
         if data.get("message") is None:
@@ -555,7 +558,6 @@ class Message(MessageFunc):
         rtn.emoji_size = EmojiSize._from_tags(tags)
         rtn.forwarded = cls._get_forwarded_from_tags(tags)
 
-        print(rtn)
         return rtn
 
 
