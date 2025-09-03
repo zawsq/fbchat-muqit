@@ -498,6 +498,8 @@ class Message(MessageFunc):
         rtn.thread_type = thread_type
         if data.get("messageMetadata"):
             rtn.location = ThreadLocation._extend_if_invalid(data["messageMetadata"]["folderId"]["systemFolderId"])
+            print(ThreadLocation._extend_if_invalid(data["messageMetadata"]["folderId"]["systemFolderId"]))
+            print(ThreadLocation._extend_if_invalid(data["messageMetadata"]["folderId"]))
         if data.get("data") and data["data"].get("prng"):
             try:
                 rtn.mentions = [
