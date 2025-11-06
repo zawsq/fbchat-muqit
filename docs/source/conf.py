@@ -1,10 +1,4 @@
 # Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 import os
 import sys
 
@@ -17,16 +11,16 @@ copyright = '2025, Muhammad MuQiT'
 author = 'Muhammad MuQiT'
 release = __version__
 version = release
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-# Add the path to the fbchat_muqit package
+# -- General configuration ---------------------------------------------------
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.autodoc.typehints',
     'sphinx.ext.intersphinx',
+    # "sphinx.ext.extlinks",
 ]
 
 # Napoleon settings
@@ -38,24 +32,70 @@ napoleon_use_rtype = True
 # Autodoc settings
 autodoc_default_options = {
     'members': True,
+    'member-order': 'groupwise',
     'undoc-members': False,
-    'show-inheritance': False,
-    'private-members': False,  # Exclude private members
-    'special-members': False,  # Exclude special methods
+    'show-inheritance': True,
+    'inherited-members': True,
+    'private-members': False,
+    'special-members': False,
 }
 
 autodoc_member_order = "bysource"
 autodoc_class_signature = "separated"
 
-templates_path = ['_templates']
-exclude_patterns = []
+# Skip submodules that should be excluded from documentation
+def skip_submodules(app, what, name, obj, skip, options):
+    """Skip members from excluded modules."""
 
+    excluded_modules = [
+        'fbchat_muqit.models.deltas',
+        'fbchat_muqit.models.mqtt_response',
+        'fbchat_muqit.exception',
+        'fbchat_muqit.logging',
+    ]
+    
+    if hasattr(obj, '__module__'):
+        for excluded in excluded_modules:
+            if obj.__module__ and obj.__module__.startswith(excluded):
+                return True
+    return skip
+
+def setup(app):
+    """Sphinx setup hook."""
+    app.connect('autodoc-skip-member', skip_submodules)
+
+templates_path = ['_templates']
+exclude_patterns = []  # This only affects .rst files, not Python modules
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'furo'
 html_static_path = ['_static']
-
 html_show_sphinx = False
 html_show_sourcelink = False
+
+html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/fontawesome.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/solid.min.css",
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/brands.min.css",
+]
+
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-brand-primary": "blue",
+        "color-brand-content": "#CC3333",
+    },
+    "footer_icons": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/togashigreat/fbchat-muqit",
+            "html": "",
+            "class": "fa-brands fa-solid fa-github fa-2x",
+        },
+    ],
+    "sidebar_hide_name": True,
+    "navigation_with_keys": True,
+}
+
+

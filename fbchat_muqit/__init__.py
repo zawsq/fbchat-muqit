@@ -1,21 +1,14 @@
-from .models import (
-    ThreadType, ThreadLocation, ThreadColor, Thread,
-    TypingStatus, User, ActiveStatus, 
-    Group, Room, Page, CustomEnum,
-    EmojiSize, Sticker, MessageReaction, Mention, Message, UnsentMessage,
-    Attachment, ShareAttachment, LocationAttachment, LiveLocationAttachment,
-    FileAttachment, AudioAttachment, ImageAttachment, VideoAttachment,
-    QuickReply, QuickReplyText, QuickReplyLocation, QuickReplyPhoneNumber,
-    QuickReplyEmail,
-    Poll, PollOption,
-    GuestStatus, Plan,
-    FBchatException, FBchatFacebookError, FBchatUserError
-)
-from .n_client import Client
-from .n_state import State
+
+from .state import State
+from .client import Client
+from .facebook.client import  FacebookClient
+from .messenger.client import MessengerClient
+from .events.dispatcher import EventType, EventDispatcher, EventCallback
+from .models import * 
+
 
 __title__ = "fbchat-muqit"
-__version__ = "1.1.31"
+__version__ = "1.1.5"
 __description__ = "A powerful Facebook Messenger Chat API to interact with Facebook and Messenger. Easy to use fast and efficient library"
 
 __copyright__ = "Copyright 2024 by Muhammad MuQiT"
@@ -26,20 +19,116 @@ __author__ = "Muhammad MuQiT"
 __email__ = "togashiyuuta1111@gmail.com"
 
 __all__ = [
-    "Client", "State",
+    # Core classes
+    "Client",
+    "State",
+    "FacebookClient",
+    "MessengerClient",
+    
+    # Thread related
+    "ThreadType",
+    "ThreadFolder",
+    "Thread",
+    
+    # User
+    "User",
+    
+    # Attachments
+    "Attachment",
+    "AttachmentType",
+    "ImageAttachment",
+    "VideoAttachment",
+    "GifAttachment",
+    "StickerAttachment",
+    "AudioAttachment",
+    "FileAttachment",
+    "LocationAttachment",
+    "PostAttachment",
+    "SharedAttachment",
+    "ReelAttachment",
+    "ProfileAttachment",
+    "ProductAttachment",
+    "ExternalAttachment",
+    "Post",
+    "Author",
+    "GroupInfo",
+    "Media",
+    "Image",
+    "Dimension",
+    
+    # Thread Actions
+    "ApprovalMode",
+    "ApprovalQueue",
+    "AdminAdded",
+    "AdminRemoved",
+    "ApprovedUser",
+    "addedParticipant",
+    "ChangeViwerStatus",
+    "JoinableMode",
+    "ParticipantsAdded",
+    "ParticipantLeft",
+    "ThreadAction",
+    "ThreadDelete",
+    "ThreadEmoji",
+    "ThreadFolderMove",
+    "ThreadMagicWord",
+    "ThreadMessagePin",
+    "ThreadMessageUnPin",
+    "ThreadMessageSharing",
+    "ThreadMuteSettings",
+    "ThreadName",
+    "ThreadNickname",
+    "ThreadTheme",
+    "MuteThread",
+    "ForcedFetch",
+    
+    # Typing
+    "Typing",
+    
+    # Timestamps
+    "ReadReceipt",
+    "DeliveryReceipt",
+    "MarkFolderSeen",
+    "MarkRead",
+    "MarkUnread",
+    
+    # Messages
+    "Message",
+    "Mention",
+    "Mentions",
+    "MessageType",
+    "MessageRemove",
+    "MessageReaction",
+    "MessageUnsend",
+    "Reaction",
+    "EmojiSize",
+    
+    # Message Data
+    "MessageData",
+    
+    # Notifications
+    "PokeNotification",
+    "PageNotification",
+    "FriendRequestState",
+    "friendUpdated",
+    "friendRequestList",
+    
+    # Presence
+    "Presence",
+    "UserStatus",
+    
+    # Themes
+    "Theme",
+    "AlternativeTheme",
+    "Asset",
 
-    "FBchatException", "FBchatFacebookError", "FBchatUserError", "CustomEnum",
+    # Event 
+    "EventType",
+    "EventDispatcher",
+    "EventCallback",
 
-    "ThreadType", "ThreadLocation", "ThreadColor", "Thread", "Group", "Room",
-    "TypingStatus", "User", "ActiveStatus", "Page",
-
-    "EmojiSize", "MessageReaction", "Mention", "Message", "Sticker",
-    "Attachment", "UnsentMessage", "ShareAttachment",
-    "LocationAttachment", "LiveLocationAttachment", "FileAttachment", 
-    "AudioAttachment", "ImageAttachment", "VideoAttachment",
-
-    "QuickReply", "QuickReplyText", "QuickReplyLocation", "QuickReplyPhoneNumber", "QuickReplyEmail",
-
-    "Poll", "PollOption", "GuestStatus", "Plan" 
-
+    # Message Response 
+    "MessageSearchStatus",
+    "MessageSearchResult",
 ]
+
