@@ -4,12 +4,13 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../../'))
 
-from fbchat_muqit import __version__
+import importlib.metadata
 
 project = 'fbchat-muqit'
 copyright = '2025, Muhammad MuQiT'
 author = 'Muhammad MuQiT'
-release = __version__
+version = importlib.metadata.version("fbchat-muqit")
+release = version
 version = release
 
 # -- General configuration ---------------------------------------------------
