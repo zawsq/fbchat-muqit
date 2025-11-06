@@ -4,13 +4,12 @@ import sys
 
 sys.path.insert(0, os.path.abspath('../../'))
 
-import importlib.metadata
+from fbchat_muqit import __version__
 
 project = 'fbchat-muqit'
 copyright = '2025, Muhammad MuQiT'
 author = 'Muhammad MuQiT'
-version = importlib.metadata.version("fbchat-muqit")
-release = version
+release = __version__
 version = release
 
 # -- General configuration ---------------------------------------------------
@@ -43,18 +42,6 @@ autodoc_default_options = {
 
 autodoc_member_order = "bysource"
 autodoc_class_signature = "separated"
-autosummary_generate = False
-autosummary_imported_members = False
-
-autodoc_mock_imports = [
-    "magic",
-    "aiohttp",
-    "aiomqtt",
-    "yarl",
-    "propcache",
-    "aiofiles",
-    "ssl",
-]
 
 
 # Skip submodules that should be excluded from documentation
