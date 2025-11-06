@@ -17,7 +17,7 @@ colorlog==6.9.0
 docutils==0.21.2
 filetype==1.2.0
 frozenlist==1.8.0
-furo==2025.9.25
+furo==2024.8.6
 idna==3.10
 imagesize==1.4.1
 Jinja2==3.1.6
