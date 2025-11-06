@@ -43,6 +43,19 @@ autodoc_default_options = {
 
 autodoc_member_order = "bysource"
 autodoc_class_signature = "separated"
+autosummary_generate = False
+autosummary_imported_members = False
+
+autodoc_mock_imports = [
+    "magic",
+    "aiohttp",
+    "aiomqtt",
+    "yarl",
+    "propcache",
+    "aiofiles",
+    "ssl",
+]
+
 
 # Skip submodules that should be excluded from documentation
 def skip_submodules(app, what, name, obj, skip, options):
