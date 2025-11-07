@@ -91,5 +91,5 @@ See [LICENSE](./LICENSE.md) for details.
 
 ### ✉️Contact Me 
 
-- (Facebook)[https://facebook.com/muqit.dev]
+- [Facebook](https://facebook.com/muqit.dev)
 
