@@ -263,7 +263,7 @@ class State:
         
         try:
             jar: CookieJar = load_json_cookies(json_cookies_path)
-            session: ClientSession = get_session(jar, user_agent, proxy)
+            session: ClientSession = get_session(jar, proxy)
             return await cls.login(session, jar, user_agent)
         except Exception as e:
             logger.error(f"Failed to create State from cookies: {e}")
@@ -466,7 +466,7 @@ class State:
     def disable_auto_refresh(self) -> None:
         """Disable automatic token refresh."""
         self._auto_refresh_enabled = False
-        self._logger.info("Auto-refresh disabled")
+        self._logger.debug("Auto-refresh disabled")
     
     @handle_exceptions(NetworkError)
     async def _check_request(self, response: aiohttp.ClientResponse) -> str:
