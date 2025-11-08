@@ -7,8 +7,10 @@
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 **fbchat-muqit** An Unofficial Asynchronous Facebook Messenger API designed to interact with Facebook and Messenger. As It is an Unofficial API we are not responsible if you get banned by Facebook. We recommend to use a dummy Facebook account. For more details check the [Documentation](http://fbchat-muqit.rtfd.io/).
-
 </div>
+
+> [!Note]
+> Bumped from version `1.1.31` to `1.2.0` and version `1.2.0` is a rewrite version meaning the library has been fully rewritten and Major changes has been made. The API is now fully Documented and the usage examples are updated.  
 
 > [!WARNING]
 > Due to `end-to-end` encryption sending messages to other Users is not supported anymore. You can send messages to Group Chat, Room Chat and to pages. [See more](https://about.fb.com/news/2024/03/end-to-end-encryption-on-messenger-explained/)
