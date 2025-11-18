@@ -24,41 +24,84 @@ class LogLevel(Enum):
 
 
 class ColoredFormatter(logging.Formatter):
-    COLORS = {
-        'TRACE': '\033[90m',
-        'DEBUG': '\033[94m',
-        'API_REQUEST': '\033[96m',
-        'API_RESPONSE': '\033[36m',
-        'INFO': '\033[92m',
-        'MESSAGE': '\033[93m',
-        'WARNING': '\033[93m',
-        'CONNECTION': '\033[95m',
-        'ERROR': '\033[91m',
-        'CRITICAL': '\033[91m\033[1m',
-        'RESET': '\033[0m'
+    FRAG = {
+        "RESET": "\033[0m",
+        "TS": "\033[90m",  # timestamp -> grey
+        "SEPARATOR": "\033[90m",
+        "LOGGER": "\033[38;5;214m",  # orange-ish
+    }
+
+    LEVEL_COLORS = {
+        "TRACE": "\033[90m",
+        "DEBUG": "\033[94m",
+        "API_REQUEST": "\033[96m",
+        "API_RESPONSE": "\033[36m",
+        "INFO": "\033[92m",
+        "MESSAGE": "\033[93m",
+        "WARNING": "\033[93m",
+        "CONNECTION": "\033[95m",
+        "ERROR": "\033[91m",
+        "CRITICAL": "\033[91m\033[1m",
+    }
+
+    # Message text colors (NEW)
+    MESSAGE_COLORS = {
+        "TRACE": "\033[90m",
+        "DEBUG": "\033[37m",
+        "API_REQUEST": "\033[96m",
+        "API_RESPONSE": "\033[36m",
+        "INFO": "\033[92m",
+        "MESSAGE": "\033[93m",
+        "WARNING": "\033[93m",
+        "CONNECTION": "\033[95m",
+        "ERROR": "\033[91m",
+        "CRITICAL": "\033[91m\033[1m",
     }
 
     EMOJIS = {
-        'TRACE': '🔍',
-        'DEBUG': '🐛',
-        'API_REQUEST': '📤',
-        'API_RESPONSE': '📥',
-        'INFO': '📜',
-        'MESSAGE': '💬',
-        'WARNING': '⚠️',
-        'CONNECTION': '🔗',
-        'ERROR': '❌',
-        'CRITICAL': '💥'
+        "TRACE": "🔍",
+        "DEBUG": "🐛",
+        "API_REQUEST": "📤",
+        "API_RESPONSE": "📥",
+        "INFO": "📜",
+        "MESSAGE": "💬",
+        "WARNING": "⚠️",
+        "CONNECTION": "🔗",
+        "ERROR": "❌",
+        "CRITICAL": "💥",
     }
 
     def format(self, record):
-        color = self.COLORS.get(record.levelname, '')
-        emoji = self.EMOJIS.get(record.levelname, '📝')
-        reset = self.COLORS['RESET']
-        timestamp = datetime.fromtimestamp(record.created).strftime('%H:%M:%S.%f')[:-3]
-        message = super().format(record)
-        caller = f" [{record.filename}:{record.lineno}]" if record.levelno <= logging.DEBUG else ""
-        return f"{color}{emoji} {timestamp} | {record.levelname:6} | {record.name}{caller} | {message}{reset}"
+        ts = datetime.fromtimestamp(record.created).strftime("%H:%M:%S.%f")[:-3]
+        level = record.levelname
+
+        emoji = self.EMOJIS.get(level, "📝")
+        reset = self.FRAG["RESET"]
+
+        ts_color = f"{self.FRAG['TS']}{ts}{reset}"
+        sep = self.FRAG["SEPARATOR"]
+
+        level_color = f"{self.LEVEL_COLORS.get(level, '')}{level}{reset}"
+
+        logger_color = f"{self.FRAG['LOGGER']}{record.name}{reset}"
+
+        # NEW: colorize message using MESSAGE_COLORS
+        msg_raw = super().format(record)
+        msg_color = f"{self.MESSAGE_COLORS.get(level, '')}{msg_raw}{reset}"
+
+        caller = (
+            f" [{record.filename}:{record.lineno}]"
+            if record.levelno <= logging.DEBUG
+            else ""
+        )
+
+        return (
+            f"{emoji} "
+            f"{ts_color} {sep}|{reset} "
+            f"{level_color} {sep}|{reset} "
+            f"{logger_color}{caller} {sep}|{reset} "
+            f"{msg_color}"
+        )
 
 
 class JSONFormatter(logging.Formatter):
