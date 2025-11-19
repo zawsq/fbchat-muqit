@@ -5,9 +5,10 @@ from enum import Enum
 from msgspec import Struct, field
 from .deltas.custom_type import Value, PostId
 
+
 class AttachmentType(str, Enum):
     IMAGE = "MessageImage"
-    VIDEO = "MessageVideo" 
+    VIDEO = "MessageVideo"
     AUDIO = "MessageAudio"
     GIF = "MessageAnimatedImage"
     STICKER = "Sticker"
@@ -23,23 +24,29 @@ class AttachmentType(str, Enum):
     FACEBOOKGAME = "MessengerBusinessMessage"
     MessengerCommunityInviteLink = "XFBMessengerCommunityInviteLink"
 
-#---------- Class Attributes of main classes ------------#
+
+# ---------- Class Attributes of main classes ------------#
+
 
 class Dimension(Struct, eq=False, frozen=True):
     """width and height of image"""
+
     height: int = field(name="x")
     """height of the image"""
     width: int = field(name="y")
     """weight of the image"""
 
+
 class Image(Struct, eq=False, frozen=True):
     """An Image url with extra info."""
+
     url: str = field(name="uri")
     """url of the image"""
     height: int = 0
     """height of the image"""
     width: int = 0
     """width of the image"""
+
 
 class Media(Struct, eq=False, frozen=True):
     preview: Image = field(name="image")
@@ -56,9 +63,9 @@ class Media(Struct, eq=False, frozen=True):
     """Can be an Image/Video/Audio"""
 
 
-
 class Author(Struct, eq=False, frozen=True, tag="User", tag_field="__typename"):
     """Profile details of the author of the shared attachment"""
+
     id: str
     """The Facebook uid of the Post Author (user, page)"""
     name: str
@@ -70,15 +77,19 @@ class Author(Struct, eq=False, frozen=True, tag="User", tag_field="__typename"):
     cover_photo: dict = {}
     """The Author's profile cover photo sometimes may not be provided."""
 
+
 class GroupInfo(Struct, frozen=True, eq=False):
     """Minimum Group information"""
+
     name: str
     """Group name"""
-    url: str 
+    url: str
     """Group's url"""
+
 
 class Post(Struct, eq=False, frozen=True, tag="Story", tag_field="__typename"):
     """Shared Facebook Post's information"""
+
     author: List[Author] = field(name="actors")
     """The `Author` of the post (Page, User e.g.)"""
     feedback_id: PostId = field(name="feedback")
@@ -95,13 +106,14 @@ class Post(Struct, eq=False, frozen=True, tag="Story", tag_field="__typename"):
     """If it is a Group post, some info maybe included"""
 
 
+# ------------- Message Attachment ----------#
 
 
-
-#------------- Message Attachment ----------# 
-
-class ImageAttachment(Struct, eq=False, frozen=True, tag="MessageImage", tag_field="__typename"):
+class ImageAttachment(
+    Struct, eq=False, frozen=True, tag="MessageImage", tag_field="__typename"
+):
     """Image attachment with preview and dimensions."""
+
     id: str = field(name="legacy_attachment_id")
     """The Image Id of the Attachment. The Id can be used to send picture without uploading to Facebook server."""
     filename: str
@@ -122,9 +134,11 @@ class ImageAttachment(Struct, eq=False, frozen=True, tag="MessageImage", tag_fie
     """Type of the attachment."""
 
 
-    
-class VideoAttachment(Struct, eq=False, frozen=True, tag="MessageVideo", tag_field="__typename"):
-    """Video attachment with duration and preview.""" 
+class VideoAttachment(
+    Struct, eq=False, frozen=True, tag="MessageVideo", tag_field="__typename"
+):
+    """Video attachment with duration and preview."""
+
     id: str = field(name="legacy_attachment_id")
     """The Id of the video."""
     filename: str
@@ -142,7 +156,10 @@ class VideoAttachment(Struct, eq=False, frozen=True, tag="MessageVideo", tag_fie
     type: AttachmentType = AttachmentType.VIDEO
     """Type of the Video."""
 
-class GifAttachment(Struct, eq=False, frozen=True, tag="MessageAnimatedImage", tag_field="__typename"):
+
+class GifAttachment(
+    Struct, eq=False, frozen=True, tag="MessageAnimatedImage", tag_field="__typename"
+):
     id: str = field(name="legacy_attachment_id")
     """Gif Id of the Attachment."""
     filename: str
@@ -156,8 +173,11 @@ class GifAttachment(Struct, eq=False, frozen=True, tag="MessageAnimatedImage", t
     type: AttachmentType = AttachmentType.GIF
 
 
-class StickerAttachment(Struct, eq=False, frozen=True, tag="Sticker", tag_field="__typename"):
+class StickerAttachment(
+    Struct, eq=False, frozen=True, tag="Sticker", tag_field="__typename"
+):
     """Sticker attachment with Its information."""
+
     id: str
     """The Id of the `Sticker`"""
     url: str
@@ -188,22 +208,28 @@ class StickerAttachment(Struct, eq=False, frozen=True, tag="Sticker", tag_field=
     """Type of the Attachment."""
 
 
-class AudioAttachment(Struct, eq=False, frozen=True, tag="MessageAudio", tag_field="__typename"):
+class AudioAttachment(
+    Struct, eq=False, frozen=True, tag="MessageAudio", tag_field="__typename"
+):
     """Audio attachment"""
+
     filename: str
     """filename of the Audio"""
     playable_url: str
     """Playable url of the Audio"""
-    playable_duration: int  = field(name="playable_duration_in_ms")
+    playable_duration: int = field(name="playable_duration_in_ms")
     """Duration of the Audio message."""
     is_voicemail: bool = False
     """wether It is voicemail"""
     type: AttachmentType = AttachmentType.AUDIO
     """Type of the Attachment."""
-    
 
-class FileAttachment(Struct, eq=False, frozen=True, tag="MessageFile", tag_field="__typename"):
+
+class FileAttachment(
+    Struct, eq=False, frozen=True, tag="MessageFile", tag_field="__typename"
+):
     """General file attachment. It can be any kind of file such as pdf, txt, html, docs etc."""
+
     download_url: Optional[str] = field(name="url")
     """The url of the file can be used to download"""
     mimetype: Optional[str] = None
@@ -212,15 +238,15 @@ class FileAttachment(Struct, eq=False, frozen=True, tag="MessageFile", tag_field
     """Wether the file is detected as malicious or not. Not really trustable :)"""
     type: AttachmentType = AttachmentType.FILE
     """Type of the Attachment."""
-  
 
 
+# -------------- ExtensibleAttachment ---------------#
 
-#-------------- ExtensibleAttachment ---------------#
 
 class LocationAttachment(Struct, eq=False, frozen=True):
     # MessageLocation from `genie_message`
     """Location attachment with coordinates."""
+
     id: str
     """Id of the Attachment"""
     url: str
@@ -233,7 +259,7 @@ class LocationAttachment(Struct, eq=False, frozen=True):
     """Latitude of the Location"""
     longitude: Optional[float] = None
     """Longitude of the Location"""
-    is_live: bool = False 
+    is_live: bool = False
     """True if the Location is live Location."""
     type: AttachmentType = AttachmentType.LOCATION
     """Type of the attachment"""
@@ -242,7 +268,8 @@ class LocationAttachment(Struct, eq=False, frozen=True):
 class PostAttachment(Struct, eq=False, frozen=False):
     # Story type from `genie_message`
     """Represents a Facebook Post Attachment shared to Messenger"""
-    id: str 
+
+    id: str
     """The id of the Attachment"""
     title: str
     """The title of the Facebook Post."""
@@ -250,19 +277,21 @@ class PostAttachment(Struct, eq=False, frozen=False):
     """The description of the Facebook Post"""
     post_preview: Media
     """The Post preview details"""
-    post_url: str 
+    post_url: str
     """The url of the Facebook Post"""
-    post: Post 
+    post: Post
     """The extra information about the Post"""
     source: Optional[str] = None
     """source of the post such as Page name or User's name etc."""
     type = AttachmentType.FACEBOOKPOST
     """Type of the Attachment"""
 
+
 class SharedAttachment(Struct, eq=False, frozen=True):
     # None tyoe from `genie_message`
     """Represents Unknown Attachment shared to Messenger"""
-    id: str 
+
+    id: str
     """The Attachment Id."""
     title: Optional[str]
     """The title of the Shared Attachment"""
@@ -273,9 +302,11 @@ class SharedAttachment(Struct, eq=False, frozen=True):
     type = AttachmentType.FACEBOOKSTORY
     """Attachment Type"""
 
+
 class ReelAttachment(Struct, eq=False, frozen=False):
     # Video type from `genie_message`
     """Represents A Facebook Reel Shared to Messenger. Any Facebook video shared in both Facebook and Instagram is also counted as Reel."""
+
     id: str
     """Id of the Reel Attachment."""
     url: str
@@ -293,9 +324,11 @@ class ReelAttachment(Struct, eq=False, frozen=False):
     type = AttachmentType.FACEBOOKREEL
     """Type of Attachment."""
 
-class ProfileAttachment(Struct, eq=False, frozen=True): 
+
+class ProfileAttachment(Struct, eq=False, frozen=True):
     # User type from `genie_message`
     """Facebook profile share attachment"""
+
     id: str
     """Attachment Id"""
     profile_id: str
@@ -311,9 +344,11 @@ class ProfileAttachment(Struct, eq=False, frozen=True):
     type = AttachmentType.FACEBOOKPROFILE
     """Attachment Type"""
 
+
 class ExternalAttachment(Struct, eq=False, frozen=True):
     # ExternalUrl from `genie_message`
     """Any Link not related to Facebook Meta is ExternalUrl Attachment.such as YT link, website link etc."""
+
     id: str
     """Attachment Id"""
     url: str
@@ -327,6 +362,7 @@ class ExternalAttachment(Struct, eq=False, frozen=True):
     type = AttachmentType.EXTERNALURL
     """Attachment Type."""
 
+
 class ProductAttachment(Struct, frozen=True, eq=False):
     id: str
     """Attachment Id."""
@@ -334,46 +370,80 @@ class ProductAttachment(Struct, frozen=True, eq=False):
     """The name of the Shared Facebook Product"""
     product_price: str
     """The product price (can be in any currency)"""
-    url: str 
+    url: str
     """Url to the product"""
     type = AttachmentType.FACEBOOKPRODUCT
     """Attachment Type"""
-
-
-
-
 
 
 # -------------- Dummy Types --------------------
 class ExtUrl(Struct, eq=False, frozen=True, tag="ExternalUrl", tag_field="__typename"):
     id: str = ""
 
-class MsgLoc(Struct, eq=False, frozen=True, tag="MessageLocation", tag_field="__typename"):
+
+class MsgLoc(
+    Struct, eq=False, frozen=True, tag="MessageLocation", tag_field="__typename"
+):
     id: str = ""
+
 
 class VideoTarget(Struct, eq=False, frozen=True, tag="Video", tag_field="__typename"):
     id: str = ""
     video_id: str = ""
 
-class MediaContainer(Struct, eq=False, frozen=True, tag="MediaContainerMediaSet", tag_field="__typename"):
+
+class MediaContainer(
+    Struct, eq=False, frozen=True, tag="MediaContainerMediaSet", tag_field="__typename"
+):
     id: str = ""
 
-class FBProduct(Struct, eq=False, frozen=True, tag="CommerceProductItemShare", tag_field="__typename"):
+
+class FBProduct(
+    Struct,
+    eq=False,
+    frozen=True,
+    tag="CommerceProductItemShare",
+    tag_field="__typename",
+):
     id: str = ""
 
-class FBGame(Struct, eq=False, frozen=True, tag="MessengerBusinessMessage", tag_field="__typename"):
+
+class FBGame(
+    Struct,
+    eq=False,
+    frozen=True,
+    tag="MessengerBusinessMessage",
+    tag_field="__typename",
+):
     """"""
+
     id: str = ""
     message: str = ""
 
+
 # only Post and Author type is used
-TargetType = Union[Post, Author, ExtUrl, MsgLoc, VideoTarget, MediaContainer, FBProduct, FBGame, None]
+TargetType = Union[
+    Post, Author, ExtUrl, MsgLoc, VideoTarget, MediaContainer, FBProduct, FBGame, None
+]
 
 # --------------------- End Dummy Types -----------------
 
 
-BlobAttachment = Union[ImageAttachment, VideoAttachment, GifAttachment, FileAttachment, AudioAttachment]
+BlobAttachment = Union[
+    ImageAttachment, VideoAttachment, GifAttachment, FileAttachment, AudioAttachment
+]
 
-Attachment = Union[ImageAttachment, VideoAttachment, GifAttachment, StickerAttachment, FileAttachment, AudioAttachment, PostAttachment, SharedAttachment, ReelAttachment, ProfileAttachment, ExternalAttachment, None]
-
-
+Attachment = Union[
+    ImageAttachment,
+    VideoAttachment,
+    GifAttachment,
+    StickerAttachment,
+    FileAttachment,
+    AudioAttachment,
+    PostAttachment,
+    SharedAttachment,
+    ReelAttachment,
+    ProfileAttachment,
+    ExternalAttachment,
+    None,
+]

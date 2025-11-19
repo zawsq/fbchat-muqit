@@ -1,10 +1,9 @@
 from typing import Dict, Optional
 from msgspec import Struct, json, field
-from .deltas.custom_type import Value 
+from .deltas.custom_type import Value
 from ..exception.errors import ParsingError
 
 __all__ = ["User"]
-
 
 
 GENDERS = {
@@ -28,9 +27,10 @@ GENDERS = {
 }
 
 
-# field values are set for msgspec to auto parse from fetched `Thread` info. 
+# field values are set for msgspec to auto parse from fetched `Thread` info.
 class User(Struct, frozen=True, eq=False):
     """Represents a Facebook User."""
+
     id: str
     """Facebook `User`'s uid"""
     name: str
@@ -53,28 +53,22 @@ class User(Struct, frozen=True, eq=False):
     """The alternate name of the Facebook `User`"""
 
 
-
-
-
-
-
 def extractVal(typ, obj):
     if typ is Value:
         if isinstance(obj, dict):
             return Value(next(iter(obj.values())))
         return Value()
 
-def parse_user_graphql(payload)->Dict[str, User]:
+
+def parse_user_graphql(payload) -> Dict[str, User]:
     """Parses graphql responses that includes `User` info"""
     json_data = json.decode(payload)
-    return {
-        k: _parse_user(k,v) for k, v in json_data["payload"].items() 
-        }
+    return {k: _parse_user(k, v) for k, v in json_data["payload"].items()}
 
 
-def _parse_user(k, v)->User:
+def _parse_user(k, v) -> User:
     try:
-        if v["id"] and v["url"]: # Check if user account deleted or deactivated id is 0
+        if v["id"] and v["url"]:  # Check if user account deleted or deactivated id is 0
             return User(
                 id=v["id"],
                 name=v["name"],
@@ -85,8 +79,8 @@ def _parse_user(k, v)->User:
                 is_friend=v["is_friend"],
                 is_blocked=v["is_blocked"],
                 image=v["thumbSrc"],
-                alternate_name=v["alternateName"]
-                ) 
+                alternate_name=v["alternateName"],
+            )
         else:
             return User(
                 id=v["id"],
@@ -97,9 +91,11 @@ def _parse_user(k, v)->User:
                 url="",
                 is_friend=False,
                 is_blocked=False,
-                )
+            )
     except KeyError as e:
-        raise ParsingError(f"Failed to parse User ({k}). Couldn't get '{e.args[0]}' from  fetched User data.", original_exception=e)
+        raise ParsingError(
+            f"Failed to parse User ({k}). Couldn't get '{e.args[0]}' from  fetched User data.",
+            original_exception=e,
+        )
     except Exception as e:
         raise ParsingError(f"Failed to parse User with Id: '{k}'", original_exception=e)
-        

@@ -5,11 +5,13 @@ fbchat_muqit/exceptions/errors.py - Custom Exception Classes
 from typing import Optional, Dict, Any
 import traceback
 
+
 class FBChatError(Exception):
     """
     Base exception for all fbchat-muqit errors.
     Clean formatting, supports error chaining, and structured data.
     """
+
     emoji = "❌"
 
     def __init__(
@@ -18,7 +20,7 @@ class FBChatError(Exception):
         *,
         error_code: Optional[str | int] = None,
         details: Optional[Dict[str, Any]] = None,
-        original_exception: Optional[Exception] = None
+        original_exception: Optional[Exception] = None,
     ):
         super().__init__(message)
         self.message = message
@@ -51,43 +53,101 @@ class FBChatError(Exception):
 
 # ─────────── Specific Exceptions ───────────
 
-class AuthenticationError(FBChatError): emoji = "🔐"
-class LoginError(AuthenticationError): emoji = "🚪"
-class SessionExpiredError(AuthenticationError): emoji = "⏰"
-class TwoFactorRequiredError(AuthenticationError): emoji = "📲"
 
-class APIError(FBChatError): emoji = "🌐"
-class ResponseError(APIError): emoji = "⚠️"
-class RateLimitError(APIError): emoji = "⏳"
-class NetworkError(APIError): emoji = "📡"
-class FacebookAPIError(APIError): emoji = "📘"
+class AuthenticationError(FBChatError):
+    emoji = "🔐"
 
-class ParsingError(FBChatError): emoji = "🧩"
-class MqttMessageParsingError(ParsingError): emoji = "📡"
 
-class MessageError(FBChatError): emoji = "💬"
-class MessageSendError(MessageError): emoji = "📤"
-class AttachmentError(MessageError): emoji = "📎"
+class LoginError(AuthenticationError):
+    emoji = "🚪"
 
-class ThreadError(FBChatError): emoji = "🧵"
-class UserNotFoundError(FBChatError): emoji = "👤"
 
-class ConnectionError(FBChatError): emoji = "🔗"
-class RealtimeError(ConnectionError): emoji = "⚡"
+class SessionExpiredError(AuthenticationError):
+    emoji = "⏰"
 
-class ValidationError(FBChatError): emoji = "🧾"
-class ConfigurationError(FBChatError): emoji = "⚙️"
+
+class TwoFactorRequiredError(AuthenticationError):
+    emoji = "📲"
+
+
+class APIError(FBChatError):
+    emoji = "🌐"
+
+
+class ResponseError(APIError):
+    emoji = "⚠️"
+
+
+class RateLimitError(APIError):
+    emoji = "⏳"
+
+
+class NetworkError(APIError):
+    emoji = "📡"
+
+
+class FacebookAPIError(APIError):
+    emoji = "📘"
+
+
+class ParsingError(FBChatError):
+    emoji = "🧩"
+
+
+class MqttMessageParsingError(ParsingError):
+    emoji = "📡"
+
+
+class MessageError(FBChatError):
+    emoji = "💬"
+
+
+class MessageSendError(MessageError):
+    emoji = "📤"
+
+
+class AttachmentError(MessageError):
+    emoji = "📎"
+
+
+class ThreadError(FBChatError):
+    emoji = "🧵"
+
+
+class UserNotFoundError(FBChatError):
+    emoji = "👤"
+
+
+class ConnectionError(FBChatError):
+    emoji = "🔗"
+
+
+class RealtimeError(ConnectionError):
+    emoji = "⚡"
+
+
+class ValidationError(FBChatError):
+    emoji = "🧾"
+
+
+class ConfigurationError(FBChatError):
+    emoji = "⚙️"
 
 
 # ─────────── Helper Decorator ───────────
 
+
 def handle_exceptions(default_exception=FBChatError):
     """Decorator to wrap and cleanly log exceptions."""
+
     def decorator(func):
         import inspect
+
         if inspect.iscoroutinefunction(func):
-            async def wrapper(*args, **kwargs): #type: ignore
+
+            async def wrapper(*args, **kwargs):  # type: ignore
                 from ..logging.logger import get_logger
+
                 logger = get_logger()
                 try:
                     return await func(*args, **kwargs)
@@ -95,12 +155,17 @@ def handle_exceptions(default_exception=FBChatError):
                     logger.error(str(e))
                     raise
                 except Exception as e:
-                    err = default_exception(f"Unexpected error in {func.__name__}: {e}", original_exception=e)
+                    err = default_exception(
+                        f"Unexpected error in {func.__name__}: {e}",
+                        original_exception=e,
+                    )
                     logger.error(str(err))
                     raise err from e
         else:
+
             def wrapper(*args, **kwargs):
                 from ..logging.logger import get_logger
+
                 logger = get_logger()
                 try:
                     return func(*args, **kwargs)
@@ -108,11 +173,17 @@ def handle_exceptions(default_exception=FBChatError):
                     logger.error(str(e))
                     raise
                 except Exception as e:
-                    err = default_exception(f"Unexpected error in {func.__name__}: {e}", original_exception=e)
+                    err = default_exception(
+                        f"Unexpected error in {func.__name__}: {e}",
+                        original_exception=e,
+                    )
                     logger.error(str(err))
                     raise err from e
+
         return wrapper
+
     return decorator
+
 
 def patch_logger_class(logger_cls):
     """Add exception-aware methods to the logger class."""
@@ -124,8 +195,8 @@ def patch_logger_class(logger_cls):
         self.logger.error(
             f"{msg}{context_str}",
             exc_info=isinstance(exc, Exception),
-            extra={'extra_data': {'context': context}},
-            )
+            extra={"extra_data": {"context": context}},
+        )
 
     logger_cls.exception = exception
     return logger_cls

@@ -5,6 +5,7 @@ from .deltas.custom_type import Value
 
 class Asset(Struct, frozen=True):
     """Represents a theme asset (icon or background)"""
+
     id: str
     """image Id"""
     image: Value
@@ -13,6 +14,7 @@ class Asset(Struct, frozen=True):
 
 class AlternativeTheme(Struct, frozen=True):
     """Alternative theme variant (typically dark mode)"""
+
     id: str
     accessibility_label: str
     description: Optional[str]
@@ -48,6 +50,7 @@ class AlternativeTheme(Struct, frozen=True):
 
 class Theme(Struct, frozen=True):
     """Main theme information"""
+
     id: str
     accessibility_label: str
     description: Optional[str]
@@ -84,11 +87,11 @@ class Theme(Struct, frozen=True):
 
 class ThreadThemes(Struct, frozen=True):
     """Container for messenger thread themes"""
+
     themes: List[Theme] = field(name="messenger_thread_themes")
 
 
 class ThemeData(Struct, frozen=True):
     """Root theme data structure"""
+
     data: ThreadThemes
-
-

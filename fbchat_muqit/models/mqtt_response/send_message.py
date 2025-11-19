@@ -9,4 +9,3 @@ def extract_message_id_raw(payload: str) -> str | None:
         return None
     mid_end = payload.find('"', mid_start)
     return payload[mid_start:mid_end] if mid_end != -1 else None
-

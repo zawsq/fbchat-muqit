@@ -3,8 +3,10 @@ from msgspec import Struct, field
 
 from .deltas.custom_type import Value
 
+
 class ReadReceipt(Struct, frozen=True, eq=False, tag="ReadReceipt", tag_field="class"):
     """When a `User` seen messages in a thread."""
+
     timestamp: str = field(name="actionTimestampMs")
     """timestamp of the message"""
     watermark_timestamp: str = field(name="watermarkTimestampMs")
@@ -16,8 +18,12 @@ class ReadReceipt(Struct, frozen=True, eq=False, tag="ReadReceipt", tag_field="c
     thread_id: Value = field(name="threadKey")
     """The Id of that Thread."""
 
-class DeliveryReceipt(Struct, frozen=True, eq=False, tag="DeliveryReceipt", tag_field="class"):
+
+class DeliveryReceipt(
+    Struct, frozen=True, eq=False, tag="DeliveryReceipt", tag_field="class"
+):
     """Client's Delivered message Delivery information"""
+
     timestamp: int = field(name="deliveredWatermarkTimestampMs")
     """Delivered timestamp"""
     message_id: List[str] = field(name="messageIds")
@@ -27,15 +33,21 @@ class DeliveryReceipt(Struct, frozen=True, eq=False, tag="DeliveryReceipt", tag_
     user_id: Value = field(name="actorFbId")
     """The sender of the message."""
 
-class MarkFolderSeen(Struct, frozen=True, eq=False, tag="MarkFolderSeen", tag_field="class"):
+
+class MarkFolderSeen(
+    Struct, frozen=True, eq=False, tag="MarkFolderSeen", tag_field="class"
+):
     """Usually received when you open messenger :)"""
+
     folders: List[str]
     """Usually Inbox can be Archive, Spam"""
     timestamp: str
     """The seen timestamp"""
 
+
 class MarkRead(Struct, frozen=True, eq=False, tag="MarkRead", tag_field="class"):
     """Client's seen message information."""
+
     timestamp: str = field(name="actionTimestamp")
     """The message timestamp"""
     thread_ids: List[Value] = field(name="threadKeys")
@@ -45,12 +57,18 @@ class MarkRead(Struct, frozen=True, eq=False, tag="MarkRead", tag_field="class")
     folder: Optional[Value] = field(name="folderId", default=None)
     """The Thread Folder where the event occurred such as Inbox, Spam, Archive"""
 
+
 class MarkUnread(Struct, frozen=True, eq=False, tag="MarkUnread", tag_field="class"):
     """Client's Unread marking Thread related information."""
+
     timestamp: str = field(name="actionTimestamp")
     """The timestamp of the event"""
     thread_ids: List[Value] = field(name="threadKeys")
     """List of Unread marked Thread Ids."""
+
+
 # Used for deltaWrapper
 
-TimestampDeltas = Union[ReadReceipt, DeliveryReceipt, MarkFolderSeen, MarkRead, MarkUnread]
+TimestampDeltas = Union[
+    ReadReceipt, DeliveryReceipt, MarkFolderSeen, MarkRead, MarkUnread
+]

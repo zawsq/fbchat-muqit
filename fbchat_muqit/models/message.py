@@ -9,10 +9,9 @@ from .attachment import Attachment
 from .thread import ThreadType, ThreadFolder
 
 
-
-
 class MessageType(Enum):
     """Types of messages that can be received."""
+
     TEXT = "text"
     IMAGE = "image"
     VIDEO = "video"
@@ -38,19 +37,25 @@ class MessageType(Enum):
     MESSAGE_REACTION = "message_reaction"
     ADMIN_TEXT = "admin_text"
 
+
 class EmojiSize(Enum):
     """Size of emojis sent in messages."""
+
     SMALL = "small"
     MEDIUM = "medium"
     LARGE = "large"
 
+
 class Reaction(Enum):
     """Represents Reaction states either ADDED or REMOVED"""
+
     ADDED = 0
     REMOVED = 1
 
+
 class Mention(Struct, frozen=True, eq=False):
     """Represents a `User` mention in a message."""
+
     user_id: str = field(name="i")
     """The id of the user to mention"""
     offset: int = field(name="o")
@@ -59,10 +64,11 @@ class Mention(Struct, frozen=True, eq=False):
     """length of user name"""
     name: Optional[str] = None
     """User's name"""
-    
+
 
 class Mentions(Struct, frozen=True):
     """mention one or multiple users"""
+
     users: Optional[List[Mention]] = None
 
     def _to_payload(self) -> dict:
@@ -86,14 +92,15 @@ class Mentions(Struct, frozen=True):
             offset = text.find(name)
             if offset == -1:
                 raise ValueError(f"Name '{name}' not found in text")
-            mentions.append(Mention(user_id=user_id, name=name, offset=offset, length=len(name)))
+            mentions.append(
+                Mention(user_id=user_id, name=name, offset=offset, length=len(name))
+            )
         return cls(mentions)
-
-
 
 
 class MessageReaction(Struct, frozen=True, eq=False):
     """Represents A Reaction Message"""
+
     id: str = field(name="messageId")
     """The message Id"""
     thread_id: Value = field(name="threadKey")
@@ -102,22 +109,26 @@ class MessageReaction(Struct, frozen=True, eq=False):
     """The `User` who reacted to the `Message`"""
     reacted_message_sender: int = field(name="senderId")
     """The Author of the message `User` reactor to."""
-    reaction_type: Reaction = field(name="action")# 0 for adding 1 for removing
+    reaction_type: Reaction = field(name="action")  # 0 for adding 1 for removing
     """Type of the Reaction"""
     reaction: Optional[str] = None
     """The Reaction Emoji"""
     timestamp: Optional[int] = field(name="reactionTimestamp", default=None)
     """The timestamp of the Stamp"""
 
+
 class MessageRemove(Struct, frozen=True, eq=False):
     """Client's removed message for himself"""
+
     ids: List[str] = field(name="messageIds")
     """List of the deleted `Message`'s Ids."""
     thread_id: Value = field(name="threadKey")
     """The Thread Id where the message belongs."""
 
+
 class MessageUnsend(Struct, frozen=True, eq=False):
     """Unsent Message information."""
+
     id: str = field(name="messageID")
     """Message Id"""
     thread_id: Value = field(name="threadKey")
@@ -127,8 +138,10 @@ class MessageUnsend(Struct, frozen=True, eq=False):
     timestamp: int = field(name="deletionTimestamp")
     """timestamp of the messages    """
 
+
 class Message(Struct, frozen=True, eq=False):
     """Represents a facebook messenger message"""
+
     id: str
     """Id of the message"""
     text: str
@@ -141,7 +154,7 @@ class Message(Struct, frozen=True, eq=False):
     """Type of the thread thread message was sent (User, Group, Page e.g.)"""
     reaction: Optional[List[MessageReaction]]
     """Id of the reactors"""
-    message_type: MessageType 
+    message_type: MessageType
     """Type of message (Video, Image, Text, e.g.)"""
     mentions: Optional[List[Mention]]
     """if any users were mentioned"""
@@ -160,5 +173,3 @@ class Message(Struct, frozen=True, eq=False):
     replied_to_message: Optional[Message] = None
     """If this message was a reply to another message"""
     replied_to_message_id: Optional[str] = None
-
-

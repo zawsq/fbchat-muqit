@@ -3,6 +3,7 @@ from msgspec import Struct, field
 
 class Typing(Struct, frozen=True, eq=False):
     """Typing information of the Typer"""
+
     sender_id: int = field(name="sender_fbid")
     """The Id of the User who is typing"""
     state: int
