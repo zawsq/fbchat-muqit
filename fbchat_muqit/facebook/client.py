@@ -4,11 +4,12 @@ import asyncio
 import json
 import base64
 import aiofiles
+
 from pathlib import Path
 from enum import Enum
-
 from typing import List, Optional
 
+from puremagic import from_string
 from msgspec.json import Decoder
 
 
@@ -548,6 +549,7 @@ class FacebookClient:
     
         async with aiofiles.open(file_path, 'rb') as f:
             file_data = await f.read()
+            mimtype = from_string(file_data, True)
 
         data = {
                 "lsd": self._state._lsd,
@@ -556,7 +558,7 @@ class FacebookClient:
                 "waterfallxapp": "comet",
                 "upload_id": upload_id
                 }
-        files = {"farr": (file_path.name, file_data, self._state._magic.from_buffer(file_data))}
+        files = {"farr": (file_path.name, file_data, mimtype)}
     
         # Upload URL from your screenshot
         url = "https://upload.facebook.com/ajax/react_composer/attachments/photo/upload"

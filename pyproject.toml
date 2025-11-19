@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fbchat-muqit"
-version = "1.2.0"
+version = "1.2.1"
 description = "A powerful Facebook Messenger API to interact with Facebook and Messenger."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
@@ -31,12 +31,12 @@ dependencies = [
     "aiomqtt>=2.3.0",
     "aenum>=3.1.15",
     "yarl>=1.18.3",
-    "python-magic>=0.4.27",
     "msgspec>=0.19.0",
     "aiofiles>=25.1.0",
     "filetype>=1.2.0",
     "aiohttp-socks>=0.10.2",
     "brotli>=1.2.0",
+    "puremagic>=1.30",
 ]
 
 [dependency-groups]

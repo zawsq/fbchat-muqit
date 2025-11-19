@@ -14,11 +14,11 @@ import time
 
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from magic import Magic
 from os.path import basename
 from typing import Dict, Optional, List, Any, Tuple
 from yarl import URL
 from aiohttp import ClientSession, CookieJar
+from puremagic import from_string
 
 # fbchat-muqit imports
 from .graphql import GraphQLProcessor
@@ -99,7 +99,6 @@ class State:
    # extra session
     _download_session: ClientSession = field(default_factory=generate_download_session)
     
-    _magic: Magic = Magic(mime=True)
 
 
 
@@ -131,6 +130,8 @@ class State:
     },
     "upload": {
         **BASE_HEADERS,
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
         "Accept": "*/*",
         # Let aiohttp set multipart Content-Type automatically
         },
@@ -179,19 +180,6 @@ class State:
         self._logger.trace(f"Generated request params for counter {self._counter}")
         return params
     
-    # def adjust_header(self, url: str) -> str:
-    #     """Adjust headers for the given URL."""
-    #     host = str(URL(url).host)
-    #     base_url = f"https://{host}"
-    #
-    #     self.HEADERS.update({
-    #         "Host": host,
-    #         "Origin": base_url,
-    #         "Referer": f"{base_url}/"
-    #     })
-        #
-        # self._logger.trace(f"Adjusted headers for host: {host}")
-        # return base_url
     
     def build_headers(self, url: str, request_type: str = "get", graphql_data: Dict = dict(), user_agent: Optional[str] = None) -> dict:
         """
@@ -224,12 +212,13 @@ class State:
             headers["Referer"] = "https://www.messenger.com/"
 
         # Adjust for uploads
-        elif "rupload" in host or "upload" in host or "upload" in request_type:
+        elif "rupload" in host or "upload" in request_type:
             headers.pop("Content-Type", None)  # multipart handled automatically
             headers["Accept"] = "*/*"
+        
 
         # Adjust for mobile domain
-        elif host.startswith("m."):
+        if host.startswith("m."):
             headers["Origin"] = "https://m.facebook.com"
             headers["Referer"] = "https://m.facebook.com/"
 
@@ -621,6 +610,7 @@ class State:
             
             data = form_data  #type: ignore
 
+
             # Let aiohttp handle Content-Type for multipart
             # copied_headers.pop("Content-Type", None)
         
@@ -870,9 +860,10 @@ class State:
         files = []
         try:
             for file_path in file_paths:
-                file_obj = open(file_path, "rb")
+                file_obj = open(file_path, "rb").read()
+                content_type = from_string(file_obj, True)
                 filename = basename(file_path)
-                content_type = self._magic.from_file(file_path)
+
                 files.append((filename, file_obj, content_type))
             
             yield files
@@ -898,7 +889,7 @@ class State:
                         )
                     file_name = basename(file_url).split("?")[0].split("#")[0]
                     content = await response.read()  # Read the content as bytes
-                    content_type = response.headers.get("Content-Type") or self._magic.from_buffer(content)
+                    content_type = response.headers.get("Content-Type") or from_string(content, True)
                     files.append(
                         (
                             file_name,
