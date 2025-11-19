@@ -424,7 +424,7 @@ class Mqtt:
             try:
                 await self._reconnect()
             except Exception as e:
-                logger.error(f"Reconnection failed: {e}")
+                logger.exception(f"Reconnection failed: {e}")
 
 
 
