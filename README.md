@@ -36,6 +36,7 @@ pip install git+https://github.com/togashigreat/fbchat-muqit.git
 ## 📙 Documentation
 
 The API is Documented. [Read The Documentation](http://fbchat-muqit.rtfd.io/).
+The older version [1.1.31](https://fbchat-muqit.readthedocs.io/en/v1.1.31/) Documentation is available as well.
 
 ## 🔧 Prerequisites
 
