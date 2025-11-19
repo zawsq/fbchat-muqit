@@ -858,23 +858,22 @@ class State:
             List of (filename, file_object, content_type) tuples
         """
         files = []
-        try:
-            for file_path in file_paths:
-                file_obj = open(file_path, "rb").read()
-                content_type = from_string(file_obj, True)
-                filename = basename(file_path)
+        for file_path in file_paths:
+            file_obj = open(file_path, "rb").read()
+            content_type = from_string(file_obj, True)
+            filename = basename(file_path)
 
-                files.append((filename, file_obj, content_type))
+            files.append((filename, file_obj, content_type))
+        
+        yield files
             
-            yield files
-            
-        finally:
-            # Ensure all files are closed
-            for filename, file_obj, content_type in files:
-                try:
-                    file_obj.close()
-                except Exception as e:
-                    self._logger.warning(f"Failed to close file {filename}: {e}")
+        # finally:
+        #     # Ensure all files are closed
+        #     for filename, file_obj, content_type in files:
+        #         try:
+        #             file_obj
+        #         except Exception as e:
+        #             self._logger.warning(f"Failed to close file {filename}: {e}")
 
 
     async def get_files_from_urls(self, file_urls)-> List[Tuple[str, bytes, str]]:
