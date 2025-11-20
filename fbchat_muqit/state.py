@@ -452,7 +452,7 @@ class State:
                 self._logger.debug("Auto-refresh loop cancelled")
                 break
             except Exception as e:
-                self._logger.error(f"Auto-refresh loop error: {e}")
+                self._logger.exception(f"Auto-refresh loop error: {e}")
                 await asyncio.sleep(60)  # Wait before retrying
 
     def enable_auto_refresh(self, interval: int = 3600) -> None:
