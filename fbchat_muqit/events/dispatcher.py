@@ -1,4 +1,6 @@
 
+import asyncio
+import inspect
 from typing import Awaitable, Callable, Dict, List
 from enum import Enum
 from ..models.deltas.delta_wrapper import Typing
@@ -97,6 +99,8 @@ class EventDispatcher:
         super().__init__(*args, **kwargs)
         self._name = ""
         self.logger: FBChatLogger = get_logger()
+        self._max_concurrent_handlers = 25
+        self._semaphore = asyncio.Semaphore(self._max_concurrent_handlers)
         self._event_listeners: Dict[EventType, List[EventCallback]] = {}
 
     def event(self, event_type):
@@ -154,26 +158,37 @@ class EventDispatcher:
 
 
     async def dispatch(self, event_name: EventType, *args, **kwargs) -> None:
-        # Dispatch an event to all registered listeners 
+        tasks = []
 
-        # Call registered listeners
-        if event_name in self._event_listeners:
-            for listener in self._event_listeners[event_name]:
-                try:
-                    await listener(*args, **kwargs)
-                    return
-                except Exception as e:
-                    self.logger.error(f"Error in event listener for {event_name}: {e}")
-        # Call method-based handlers (on_message, on_ready, etc.)
+        listeners = self._event_listeners.get(event_name, [])
+
+        # method-based handler
         method_name = f"on_{event_name.value}"
         if hasattr(self, method_name):
-            method = getattr(self, method_name)
-            try:
-                await method(*args, **kwargs)
-            except Exception as e:
-                    self.logger.error(f"Error in {method_name}: {e}")
+            listeners = list(listeners) + [getattr(self, method_name)]
+
+        for listener in listeners:
+            tasks.append(asyncio.create_task(
+                self._safe_execute(listener, event_name, *args, **kwargs)
+            ))
+
+        if tasks:
+            await asyncio.gather(*tasks)
         
 
+    async def _safe_execute(self, listener, event_name, *args, **kwargs):
+        async with self._semaphore:
+            try:
+                if inspect.iscoroutinefunction(listener):
+                    await listener(*args, **kwargs)
+                else:
+                    # sync listener safety
+                    await asyncio.to_thread(listener, *args, **kwargs)
+            except Exception as e:
+                self.logger.error(
+                    f"Error in event listener for {event_name}: {e}",
+                    exc_info=True
+                )
                     
     async def on_listening(self):
         """Called when the client starts listening to events"""
