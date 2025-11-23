@@ -99,7 +99,7 @@ class ApprovedUser(Struct, frozen=True, eq=False):
 # payload class
 class ChangeViwerStatus(Struct, frozen=True, eq=False):
     """Changed Viewer Status information"""
-    user_id: str = field(name="actorFbid")
+    user_id: Value = field(name="actorFbid")
     """The User (Client) who changed the View"""
     thread_id: Value = field(name="threadKey")
     """The Thread's (User Thread) Id which view was changed"""
