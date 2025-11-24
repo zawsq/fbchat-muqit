@@ -375,7 +375,7 @@ class Mqtt:
         await self._cancel_task(self._listen_task)
         await self._cancel_task(self._presence_task)
         # Disconnect current client
-        if self._mqttClient:
+        if not getattr(self._mqttClient, "_closed", False):
             await self._mqttClient.__aexit__(None, None, None)
        
         await asyncio.sleep(2)
