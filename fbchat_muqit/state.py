@@ -155,8 +155,8 @@ class State:
         self.ALLHEADERS["upload"]["User-Agent"] = self._userAgent
         
         # Start auto-refresh task if enabled
-        if self._auto_refresh_enabled:
-            asyncio.create_task(self._auto_refresh_loop())
+        # if self._auto_refresh_enabled:
+        #     asyncio.create_task(self._auto_refresh_loop())
 
     @property
     def is_refresh_needed(self) -> bool:

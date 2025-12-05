@@ -69,7 +69,7 @@ class Thread(Struct, frozen=True, eq=False):
 
 
 def parse_thread_info(data: List[Dict])->Tuple[Thread, ...]:
-    return tuple(get_and_parse(t) for t in data)
+    return tuple(get_and_parse(t) for t in data if t)
 
 def get_and_parse(t)-> Thread:
     if "message_thread" in t:
