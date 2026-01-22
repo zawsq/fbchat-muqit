@@ -1,11 +1,9 @@
 from typing import Dict, Optional
 from msgspec import Struct, json, field
-from .deltas.custom_type import Value 
+from .deltas.custom_type import Value
 from ..exception.errors import ParsingError
 
 __all__ = ["User"]
-
-
 
 GENDERS = {
     0: "unknown",
@@ -27,8 +25,6 @@ GENDERS = {
     "NEUTER": "neuter_singular",
 }
 
-
-# field values are set for msgspec to auto parse from fetched `Thread` info. 
 class User(Struct, frozen=True, eq=False):
     """Represents a Facebook User."""
     id: str
@@ -52,54 +48,42 @@ class User(Struct, frozen=True, eq=False):
     alternate_name: Optional[str] = None
     """The alternate name of the Facebook `User`"""
 
-
-
-
-
-
-
 def extractVal(typ, obj):
     if typ is Value:
         if isinstance(obj, dict):
             return Value(next(iter(obj.values())))
         return Value()
 
-def parse_user_graphql(payload)->Dict[str, User]:
-    """Parses graphql responses that includes `User` info"""
-    json_data = json.decode(payload)
-    return {
-        k: _parse_user(k,v) for k, v in json_data["payload"].items() 
-        }
+def parse_user_graphql(payload) -> Dict[str, User]:
+    """Parses GraphQL responses that includes User info (works with dict or bytes)."""
+    if isinstance(payload, dict):
+        json_data = payload
+    else:
+        json_data = json.decode(payload)
 
+    users_dict = {}
+    profiles = json_data["payload"].get("profiles", {})
+    for k, v in profiles.items():
+        users_dict[k] = _parse_user(k, v)
+    return users_dict
 
-def _parse_user(k, v)->User:
+def _parse_user(k, v) -> User:
+    """Parse a single user from GraphQL response (handles new payload structure)."""
     try:
-        if v["id"] and v["url"]: # Check if user account deleted or deactivated id is 0
-            return User(
-                id=v["id"],
-                name=v["name"],
-                first_name=v["firstName"],
-                username=v["vanity"],
-                gender=GENDERS[v["gender"]],
-                url=v["uri"],
-                is_friend=v["is_friend"],
-                is_blocked=v["is_blocked"],
-                image=v["thumbSrc"],
-                alternate_name=v["alternateName"]
-                ) 
-        else:
-            return User(
-                id=v["id"],
-                name=v["name"],
-                first_name=v["firstName"],
-                username=v["vanity"] if "vanity" in v else "",
-                gender=GENDERS["UNKNOWN"],
-                url="",
-                is_friend=False,
-                is_blocked=False,
-                )
-    except KeyError as e:
-        raise ParsingError(f"Failed to parse User ({k}). Couldn't get '{e.args[0]}' from  fetched User data.", original_exception=e)
+        user_id = v.get("id", k)
+        url = v.get("uri", "")
+
+        return User(
+            id=user_id,
+            name=v.get("name", ""),
+            first_name=v.get("firstName", ""),
+            username=v.get("vanity", ""),
+            gender=GENDERS.get(v.get("gender", "UNKNOWN"), "unknown"),
+            url=url,
+            is_friend=v.get("is_friend", False),
+            is_blocked=v.get("is_blocked", False),
+            image=v.get("thumbSrc", None),
+            alternate_name=v.get("alternateName", None)
+        )
     except Exception as e:
-        raise ParsingError(f"Failed to parse User with Id: '{k}'", original_exception=e)
-        
+        raise ParsingError(f"Failed to parse User ({k})", original_exception=e)
