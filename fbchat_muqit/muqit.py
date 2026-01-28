@@ -53,7 +53,7 @@ class Mqtt:
     _sync_token: Any = field(default=None)
 
     _update_presence: bool = field(default=True)
-    _auto_reconnect: bool = field(default=True)
+    _auto_reconnect: bool = field(default=False)
     _presence_task: Optional[Task] = field(default=None)
     _reconnect_task: Optional[Task] = field(default=None)
     _listen_task: Optional[Task] = field(default=None)
