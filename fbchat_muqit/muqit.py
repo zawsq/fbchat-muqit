@@ -124,8 +124,8 @@ class Mqtt:
             # run them in the background
             if self._update_presence:
                 self._presence_task = asyncio.create_task(self._presence_updater())
-            if self._auto_reconnect:
-                self._reconnect_task = asyncio.create_task(self._schedule_reconnect())
+            # if self._auto_reconnect:
+            #     self._reconnect_task = asyncio.create_task(self._schedule_reconnect())
 
             self._listen_task = asyncio.create_task(self.listen())
 
