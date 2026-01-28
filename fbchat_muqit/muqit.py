@@ -281,9 +281,10 @@ class Mqtt:
             return
         except Exception as e:
             logger.error(f"MQTT listening loop error: {e}")
-            if self._running and self._auto_reconnect:
-                logger.info("Attempting to reconnect...")
-                await self._reconnect()
+            raise DisconnectedError
+            # if self._running and self._auto_reconnect:
+            #     logger.info("Attempting to reconnect...")
+            #     await self._reconnect()
         finally:
             logger.info("MQTT listening loop ended")
             raise DisconnectedError
