@@ -129,3 +129,7 @@ def patch_logger_class(logger_cls):
 
     logger_cls.exception = exception
     return logger_cls
+
+class DisconnectedError(RuntimeError):
+    "disconnetion"
+    pass

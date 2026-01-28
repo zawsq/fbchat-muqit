@@ -24,6 +24,7 @@ from .utils.utils import generate_uuid
 
 logger = get_logger()
 
+
 def generate_session_id()-> int:
     return random.randint(1, 2 ** 53)
 
@@ -285,6 +286,7 @@ class Mqtt:
                 await self._reconnect()
         finally:
             logger.info("MQTT listening loop ended")
+            raise DisconnectedError
 
 
     def parse_json(self, data):
