@@ -238,7 +238,7 @@ class Mqtt:
             payload["last_seq_id"] = str(self._sequence_id)
             payload["sync_token"] = self._sync_token
 
-        await self._mqttClient.publish(topic, json.dumps(payload), qos=1)
+        await self._mqttClient.publish(topic, json.dumps(payload), qos=0)
 
     def extract_meta(self, raw):
         """extracts sequence and sync token"""
@@ -300,7 +300,7 @@ class Mqtt:
 
     async def set_foreground(self, value):
         payload = json.dumps({"foreground": value})
-        await self._mqttClient.publish("/foreground_state", payload=payload, qos=1)
+        await self._mqttClient.publish("/foreground_state", payload=payload, qos=0)
         self._foreground = value
 
 
@@ -329,7 +329,7 @@ class Mqtt:
                     await self._mqttClient.publish(
                         '/orca_presence', 
                         json.dumps({"p": presence_payload}), 
-                        qos=1
+                        qos=0
                     )
                     logger.debug("Presence updated")
                 await asyncio.sleep(50)  # Update every 50 seconds
