@@ -307,8 +307,7 @@ class Mqtt:
     async def set_chat_on(self, value):
         data = {"make_user_available_when_in_foreground": value}
         payload = json.dumps(data)
-        if self._mqttClient._client.is_connected():
-            await self._mqttClient.publish("/set_client_settings", payload=payload, qos=1)
+        await self._mqttClient.publish("/set_client_settings", payload=payload, qos=0)
         self._chat_on = value
 
 
