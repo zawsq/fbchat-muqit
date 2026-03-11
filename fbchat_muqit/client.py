@@ -119,7 +119,7 @@ class Client(EventDispatcher, FacebookClient, MessengerClient):
             except Exception:
                 pass
 
-    async def start_listening(self):
+    async def start_listening(self, auto_reconnect: bool = True):
         """Start listening from an external event loop.
         
         Raises:
@@ -132,7 +132,8 @@ class Client(EventDispatcher, FacebookClient, MessengerClient):
                 state=self._state,
                 chat_on=self._online,
                 foreground=self._online,
-                message_handler=self._handle_mqtt_messages
+                message_handler=self._handle_mqtt_messages,
+                auto_reconnect=auto_reconnect
             )
 
         self._realtime = await FacebookRealtime.connect(self._state, self._handle_realtime_messages)
@@ -157,15 +158,15 @@ class Client(EventDispatcher, FacebookClient, MessengerClient):
         self._realtime = None
 
 
-    async def listen(self): 
+    async def listen(self, auto_reconnect: bool = True):
         """Starts listening to events Blockingly"""
-        await self.start_listening()
+        await self.start_listening(auto_reconnect=auto_reconnect)
 
         await self.dispatch(EventType.LISTENING)
 
         try:
             while self._listening:
-                await asyncio.sleep(3600)
+                await asyncio.sleep(10)
         except asyncio.CancelledError:
             self.logger.debug("Client stopped listening!")
             raise 
